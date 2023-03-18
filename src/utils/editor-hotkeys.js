@@ -1,6 +1,4 @@
 import * as monaco from 'monaco-editor'
-import { $ } from '../../../utils/dom.js'
-// import { copyToClipboard } from '../../../utils/string'
 
 export const initEditorHotKeys = (editor) => {
   // Shortcut: Open/Close Settings
@@ -10,10 +8,8 @@ export const initEditorHotKeys = (editor) => {
     keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Comma],
     contextMenuGroupId: 'navigation',
     contextMenuOrder: 1.5,
-    // Method that will be executed when the action is triggered.
-    // @param editor The editor instance is passed in as a convenience
     run: () => {
-      const $settingsButton = $("button[data-action='show-settings-bar']")
+      const $settingsButton = document.querySelector("button[data-action='show-settings-bar']")
       $settingsButton && $settingsButton.click()
     }
   })
