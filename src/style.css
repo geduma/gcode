@@ -69,6 +69,7 @@ section {
   bottom: 16px;
   z-index: 1;
   background-repeat: no-repeat;
+  opacity: .4;
 }
 
 #html::after {
