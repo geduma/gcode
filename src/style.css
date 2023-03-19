@@ -58,7 +58,6 @@ section {
 
 .editor {
   position: relative;
-  resize: initial;
   overflow: hidden;
 }
 

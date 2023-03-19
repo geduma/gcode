@@ -82,7 +82,8 @@ const createEditor = ({ el, value, language }) => {
     autoIndent: true,
     formatOnPaste: true,
     formatOnType: true,
-    lineNumbers: 'off'
+    lineNumbers: 'off',
+    wordWrap: 'on'
   })
 }
 
@@ -120,6 +121,7 @@ const init = () => {
 
   configurePrettierHotkeys([EDITORS.HTML, EDITORS.CSS, EDITORS.JS])
   emmetHTML(monaco)
+  // initializeEventsController({ HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER })
 
   update()
 }
