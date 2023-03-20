@@ -126,4 +126,47 @@ const init = () => {
   update()
 }
 
+const copyToClipBoard = async ({ text }) => {
+  if (!navigator.clipboard) {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.top = '0'
+    textArea.style.left = '0'
+    textArea.style.position = 'fixed'
+
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    document.execCommand('copy')
+    textArea.remove()
+  } else await navigator.clipboard.writeText(text)
+}
+
+el('.copy').addEventListener('click', (e) => {
+  const btn = e.target
+  if (btn.lastChild.tagName === 'SPAN') btn.lastChild.remove()
+
+  const tooltip = document.createElement('span')
+  tooltip.innerText = 'copied!'
+  tooltip.style.width = 'auto'
+  tooltip.style.backgroundColor = '#000'
+  tooltip.style.color = '#FFF'
+  tooltip.style.textAlign = 'center'
+  tooltip.style.borderRadius = '6px'
+  tooltip.style.padding = '2px 4px'
+  tooltip.style.position = 'absolute'
+  tooltip.style.zIndex = '1'
+  tooltip.style.fontSize = '10px'
+  tooltip.style.marginLeft = '-3rem'
+  tooltip.style.marginTop = '-1.2rem'
+
+  btn.appendChild(tooltip)
+
+  copyToClipBoard({ text: window.location.href })
+
+  setTimeout(() => {
+    tooltip.remove()
+  }, 1500)
+})
+
 init()
