@@ -184,7 +184,6 @@ const embedConfig = () => {
 }
 
 el('.copy').addEventListener('click', (e) => {
-  console.log(window.location.href)
   copyToClipBoard({ pattern: e.target, text: window.location.href })
 })
 
