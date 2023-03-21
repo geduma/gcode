@@ -134,3 +134,18 @@ footer > div {
 .disabled:hover {
   opacity: .2;
 }
+
+@media only screen and (hover: none) and (pointer: coarse){
+  .footer-controls {
+    display: none;
+  }
+
+  footer > span {
+    text-align: center;
+    width: 100%;
+  }
+
+  .iPadShowKeyboard {
+    display: none;
+  }
+}

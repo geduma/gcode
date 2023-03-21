@@ -15,6 +15,7 @@ const HTML_CONTAINER = el('#html')
 const CSS_CONTAINER = el('#css')
 const JS_CONTAINER = el('#js')
 let EDITORS = null
+let EMBEDDED = false
 
 window.MonacoEnvironment = {
   getWorker (_, label) {
@@ -42,8 +43,15 @@ Split({
 })
 
 const getHashValue = () => {
-  const { pathname } = window.location
+  let { pathname } = window.location
+
+  if (pathname.indexOf('/embed') === 0) {
+    pathname = pathname.replace('/embed', '')
+    EMBEDDED = true
+  }
+
   const [html, css, js] = pathname.slice(1).split('%7C')
+
   return {
     html: html ? decode(html) : '',
     css: css ? decode(css) : '',
@@ -123,10 +131,33 @@ const init = () => {
   emmetHTML(monaco)
   // initializeEventsController({ HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER })
 
+  if (EMBEDDED) embedConfig()
+
   update()
 }
 
-const copyToClipBoard = async ({ text }) => {
+const copyToClipBoard = async ({ pattern, text, position }) => {
+  if (pattern.lastChild.tagName === 'SPAN') pattern.lastChild.remove()
+
+  const tooltip = document.createElement('span')
+  tooltip.innerText = 'copied!'
+  tooltip.style.width = 'auto'
+  tooltip.style.backgroundColor = '#000'
+  tooltip.style.color = '#FFF'
+  tooltip.style.textAlign = 'center'
+  tooltip.style.borderRadius = '6px'
+  tooltip.style.padding = '2px 4px'
+  tooltip.style.position = 'absolute'
+  tooltip.style.zIndex = '1'
+  tooltip.style.fontSize = '10px'
+  tooltip.style.top = '50%'
+  tooltip.style.left = '50%'
+  tooltip.style.transform = 'translate(-50%, -50%)'
+  tooltip.style.marginTop = `-${pattern.offsetHeight}px`
+  pattern.style.position = 'relative'
+  pattern.appendChild(tooltip)
+
+  // copy
   if (!navigator.clipboard) {
     const textArea = document.createElement('textarea')
     textArea.value = text
@@ -140,33 +171,27 @@ const copyToClipBoard = async ({ text }) => {
     document.execCommand('copy')
     textArea.remove()
   } else await navigator.clipboard.writeText(text)
-}
-
-el('.copy').addEventListener('click', (e) => {
-  const btn = e.target
-  if (btn.lastChild.tagName === 'SPAN') btn.lastChild.remove()
-
-  const tooltip = document.createElement('span')
-  tooltip.innerText = 'copied!'
-  tooltip.style.width = 'auto'
-  tooltip.style.backgroundColor = '#000'
-  tooltip.style.color = '#FFF'
-  tooltip.style.textAlign = 'center'
-  tooltip.style.borderRadius = '6px'
-  tooltip.style.padding = '2px 4px'
-  tooltip.style.position = 'absolute'
-  tooltip.style.zIndex = '1'
-  tooltip.style.fontSize = '10px'
-  tooltip.style.marginLeft = '-3rem'
-  tooltip.style.marginTop = '-1.2rem'
-
-  btn.appendChild(tooltip)
-
-  copyToClipBoard({ text: window.location.href })
 
   setTimeout(() => {
     tooltip.remove()
   }, 1500)
+}
+
+const embedConfig = () => {
+  document.querySelectorAll('.control').forEach(btn => {
+    if (btn.className.indexOf('copy') < 0) btn.remove()
+  })
+}
+
+el('.copy').addEventListener('click', (e) => {
+  console.log(window.location.href)
+  copyToClipBoard({ pattern: e.target, text: window.location.href })
+})
+
+el('.embed').addEventListener('click', (e) => {
+  const url = `${window.location.origin}/embed${window.location.pathname}`
+  const iframe = `<iframe src="${url}" style="width=100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
+  copyToClipBoard({ pattern: e.target, text: iframe })
 })
 
 init()
