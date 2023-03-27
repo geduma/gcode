@@ -14,6 +14,16 @@ const TEMPLATE = '<!DOCTYPE html><html lang="en"><head> <style>CSS_EDITOR</style
 const HTML_CONTAINER = el('#html')
 const CSS_CONTAINER = el('#css')
 const JS_CONTAINER = el('#js')
+const DIALOG = document.querySelector('dialog')
+const OVERLAY = document.querySelector('.overlay')
+const LAYOUTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js')
+const ENUM_LAYOUTS = {
+  html: 1,
+  css: 2,
+  js: 3,
+  preview: 4
+}
+let layoutSettings = 1234
 let EDITORS = null
 let EMBEDDED = false
 
@@ -50,7 +60,8 @@ const getHashValue = () => {
     EMBEDDED = true
   }
 
-  const [html, css, js] = pathname.slice(1).split('%7C')
+  const [layouts, html, css, js] = pathname.slice(1).split('%7C')
+  layoutSettings = decode(layouts)
 
   return {
     html: html ? decode(html) : '',
@@ -115,10 +126,7 @@ const update = () => {
     js: EDITORS.JS.getValue()
   }))
 
-  if (notEmpty()) {
-    const hash = `${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}`
-    window.history.replaceState(null, null, `/${hash}`)
-  } else window.history.replaceState(null, null, '/')
+  setHashUrl()
 }
 
 const init = () => {
@@ -129,11 +137,17 @@ const init = () => {
 
   configurePrettierHotkeys([EDITORS.HTML, EDITORS.CSS, EDITORS.JS])
   emmetHTML(monaco)
-  // initializeEventsController({ HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER })
+  update()
+  setLayout()
 
   if (EMBEDDED) embedConfig()
+}
 
-  update()
+const setHashUrl = () => {
+  let hash = `${encode(layoutSettings)}`
+  if (notEmpty()) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}`
+
+  window.history.replaceState(null, null, `/${hash}`)
 }
 
 const copyToClipBoard = async ({ pattern, text, position }) => {
@@ -177,11 +191,34 @@ const copyToClipBoard = async ({ pattern, text, position }) => {
   }, 1500)
 }
 
+const openDialog = () => {
+  DIALOG.style.visibility = 'visible'
+  OVERLAY.style.display = 'block'
+}
+
 const embedConfig = () => {
   document.querySelectorAll('.control').forEach(btn => {
     if (btn.className.indexOf('copy') < 0) btn.remove()
   })
 }
+
+const getActiveLayouts = () => {
+  let editors = ''
+  LAYOUTS.forEach(item => {
+    if (item.className.indexOf('off') < 0) editors += `${item.className.replace('layout-', '')},`
+  })
+
+  return editors.substr(0, editors.length - 1)
+}
+
+const setLayout = () => {
+  console.log(layoutSettings)
+}
+
+el('.close-dialog').addEventListener('click', () => {
+  DIALOG.style.visibility = 'hidden'
+  OVERLAY.style.display = 'none'
+})
 
 el('.copy').addEventListener('click', (e) => {
   copyToClipBoard({ pattern: e.target, text: window.location.href })
@@ -191,6 +228,20 @@ el('.embed').addEventListener('click', (e) => {
   const url = `${window.location.origin}/embed${window.location.pathname}`
   const iframe = `<iframe src="${url}" style="width=100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
   copyToClipBoard({ pattern: e.target, text: iframe })
+})
+
+el('.layout').addEventListener('click', (e) => {
+  openDialog()
+})
+
+LAYOUTS.forEach(item => {
+  item.addEventListener('click', (e) => {
+    const element = e.target
+    if (!element.classList.contains('off')) element.classList.add('off')
+    else element.classList.remove('off')
+
+    layoutSettings.editors = getActiveLayouts()
+  })
 })
 
 init()
