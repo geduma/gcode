@@ -10,6 +10,7 @@
 </head>
 
 <body>
+  <div class="overlay"></div>
   <div id="app">
     <div class="grid">
       <section class="editors grid-rows">
@@ -20,20 +21,31 @@
         <div id="js" class="editor"></div>
       </section>
       <div class="gutter-col gutter-col-1"></div>
-      <section">
+      <section id="preview">
         <iframe src="" frameborder="0"></iframe>
-        </section>
+      </section>
     </div>
   </div>
   <footer>
     <div class="footer-controls">
-      <button class="shortcuts control disabled">Shortcuts</button>
-      <button class="layout control disabled">Layout</button>
+      <button class="layout control">Layout</button>
       <button class="copy control">Copy URL</button>
       <button class="embed control">Embed Editor</button>
     </div>
     <span>By @geduramc &#9749;</span>
   </footer>
+  <dialog>
+    <div class="layout-container">
+      <div class="layout-editors">
+        <div class="layout-html">html</div>
+        <div class="layout-css">css</div>
+        <div class="layout-js">js</div>
+      </div>
+      <div class="layout-preview">preview</div>
+    </div>
+    <div class="custom-editor off disabled">custom-editor</div>
+    <label class="close-dialog">close</label>
+  </dialog>
   <script type="module" src="/src/main.js"></script>
 </body>
 

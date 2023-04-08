@@ -14,6 +14,18 @@ const TEMPLATE = '<!DOCTYPE html><html lang="en"><head> <style>CSS_EDITOR</style
 const HTML_CONTAINER = el('#html')
 const CSS_CONTAINER = el('#css')
 const JS_CONTAINER = el('#js')
+const PREVIEW_CONTAINER = el('#preview')
+const DIALOG = document.querySelector('dialog')
+const OVERLAY = document.querySelector('.overlay')
+const LAYOUTS_ELEMENTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js')
+const INITIAL_LAYOUTS = 1234
+const ENUM_LAYOUTS = {
+  html: 1,
+  css: 2,
+  js: 3,
+  preview: 4
+}
+
 let EDITORS = null
 let EMBEDDED = false
 
@@ -50,7 +62,8 @@ const getHashValue = () => {
     EMBEDDED = true
   }
 
-  const [html, css, js] = pathname.slice(1).split('%7C')
+  const [layouts, html, css, js] = pathname.slice(1).split('%7C')
+  updateLayouts(layouts.length <= 0 ? INITIAL_LAYOUTS : Number(decode(layouts)))
 
   return {
     html: html ? decode(html) : '',
@@ -97,43 +110,25 @@ const createEditor = ({ el, value, language }) => {
 
 const createEditors = () => {
   const values = getHashValue()
-  return {
+
+  EDITORS = {
     HTML: createEditor({ el: HTML_CONTAINER, value: values.html, language: 'html' }),
     CSS: createEditor({ el: CSS_CONTAINER, value: values.css, language: 'css' }),
     JS: createEditor({ el: JS_CONTAINER, value: values.js, language: 'javascript' })
   }
-}
 
-const notEmpty = () => {
-  return (EDITORS.HTML.getValue().length > 0 || EDITORS.CSS.getValue().length > 0 || EDITORS.JS.getValue().length > 0)
-}
-
-const update = () => {
-  el('iframe').setAttribute('srcdoc', createHTML({
-    html: EDITORS.HTML.getValue(),
-    css: EDITORS.CSS.getValue(),
-    js: EDITORS.JS.getValue()
-  }))
-
-  if (notEmpty()) {
-    const hash = `${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}`
-    window.history.replaceState(null, null, `/${hash}`)
-  } else window.history.replaceState(null, null, '/')
-}
-
-const init = () => {
-  EDITORS = createEditors()
   EDITORS.HTML.onDidChangeModelContent(update)
   EDITORS.CSS.onDidChangeModelContent(update)
   EDITORS.JS.onDidChangeModelContent(update)
 
   configurePrettierHotkeys([EDITORS.HTML, EDITORS.CSS, EDITORS.JS])
   emmetHTML(monaco)
-  // initializeEventsController({ HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER })
 
-  if (EMBEDDED) embedConfig()
+  return EDITORS
+}
 
-  update()
+const notEmpty = () => {
+  return (EDITORS.HTML.getValue().length > 0 || EDITORS.CSS.getValue().length > 0 || EDITORS.JS.getValue().length > 0)
 }
 
 const copyToClipBoard = async ({ pattern, text, position }) => {
@@ -177,11 +172,98 @@ const copyToClipBoard = async ({ pattern, text, position }) => {
   }, 1500)
 }
 
+const openDialog = () => {
+  DIALOG.style.visibility = 'visible'
+  OVERLAY.style.display = 'block'
+}
+
 const embedConfig = () => {
   document.querySelectorAll('.control').forEach(btn => {
     if (btn.className.indexOf('copy') < 0) btn.remove()
   })
 }
+
+const getActiveLayouts = () => {
+  let editors = ''
+  LAYOUTS_ELEMENTS.forEach(item => {
+    if (item.className.indexOf('off') < 0) editors += ENUM_LAYOUTS[item.className.replace('layout-', '')]
+  })
+
+  return Number(editors)
+}
+
+const updateLayouts = (layouts) => {
+  LAYOUTS_ELEMENTS.forEach(item => {
+    const layoutsArr = Array.from(String(layouts), Number)
+    if (!layoutsArr.includes(ENUM_LAYOUTS[item.className.replace('layout-', '')])) item.classList.add('off')
+  })
+
+  setLayout()
+}
+
+const toogleEditor = (elements) => {
+  const actives = Array.from(String(getActiveLayouts()), Number)
+  elements.forEach(el => {
+    if (!actives.includes(ENUM_LAYOUTS[el.getAttribute('id')])) el.style.display = 'none'
+    else el.style.display = 'block'
+  })
+}
+
+const setLayout = () => {
+  toogleEditor([HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER, PREVIEW_CONTAINER])
+
+  const actives = Array.from(String(getActiveLayouts()), Number)
+  const grid = el('.grid')
+  const gridRows = el('.grid-rows')
+
+  // columns
+  if (actives.includes(4)) {
+    if (actives.length > 1) {
+      grid.style.gridTemplateColumns = '49.5% 1% 49.5%'
+      gridRows.style.display = ''
+    } else {
+      grid.style.gridTemplateColumns = '100%'
+      gridRows.style.display = 'none'
+    }
+  } else {
+    grid.style.gridTemplateColumns = '100%'
+    gridRows.style.display = ''
+  }
+
+  // rows
+  if (actives.filter(x => x !== 4).length === 1) gridRows.style.gridTemplateRows = '100%'
+  if (actives.filter(x => x !== 4).length === 2) gridRows.style.gridTemplateRows = '49.5% 1% 49.5%'
+  if (actives.filter(x => x !== 4).length === 3) gridRows.style.gridTemplateRows = '32.6% 1% 32.6% 1% 32.6%'
+}
+
+const setHashUrl = () => {
+  let hash = `${encode(getActiveLayouts())}`
+  if (notEmpty()) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}`
+
+  window.history.replaceState(null, null, `/${hash}`)
+}
+
+const update = () => {
+  el('iframe').setAttribute('srcdoc', createHTML({
+    html: EDITORS.HTML.getValue(),
+    css: EDITORS.CSS.getValue(),
+    js: EDITORS.JS.getValue()
+  }))
+
+  setHashUrl()
+}
+
+const init = () => {
+  createEditors()
+  update()
+
+  if (EMBEDDED) embedConfig()
+}
+
+el('.close-dialog').addEventListener('click', () => {
+  DIALOG.style.visibility = 'hidden'
+  OVERLAY.style.display = 'none'
+})
 
 el('.copy').addEventListener('click', (e) => {
   copyToClipBoard({ pattern: e.target, text: window.location.href })
@@ -191,6 +273,21 @@ el('.embed').addEventListener('click', (e) => {
   const url = `${window.location.origin}/embed${window.location.pathname}`
   const iframe = `<iframe src="${url}" style="width=100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
   copyToClipBoard({ pattern: e.target, text: iframe })
+})
+
+el('.layout').addEventListener('click', (e) => {
+  openDialog()
+})
+
+LAYOUTS_ELEMENTS.forEach(item => {
+  item.addEventListener('click', (e) => {
+    const element = e.target
+    if (!element.classList.contains('off')) element.classList.add('off')
+    else element.classList.remove('off')
+
+    update()
+    setLayout()
+  })
 })
 
 init()
