@@ -211,6 +211,29 @@ const toogleEditor = (elements) => {
 
 const setLayout = () => {
   toogleEditor([HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER, PREVIEW_CONTAINER])
+
+  const actives = Array.from(String(getActiveLayouts()), Number)
+  const grid = el('.grid')
+  const gridRows = el('.grid-rows')
+
+  // columns
+  if (actives.includes(4)) {
+    if (actives.length > 1) {
+      grid.style.gridTemplateColumns = '49.5% 1% 49.5%'
+      gridRows.style.display = ''
+    } else {
+      grid.style.gridTemplateColumns = '100%'
+      gridRows.style.display = 'none'
+    }
+  } else {
+    grid.style.gridTemplateColumns = '100%'
+    gridRows.style.display = ''
+  }
+
+  // rows
+  if (actives.filter(x => x !== 4).length === 1) gridRows.style.gridTemplateRows = '100%'
+  if (actives.filter(x => x !== 4).length === 2) gridRows.style.gridTemplateRows = '49.5% 1% 49.5%'
+  if (actives.filter(x => x !== 4).length === 3) gridRows.style.gridTemplateRows = '32.6% 1% 32.6% 1% 32.6%'
 }
 
 const setHashUrl = () => {
