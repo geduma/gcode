@@ -125,7 +125,7 @@ const createEditors = () => {
     timeout = setTimeout(() => {
       update()
       clearTimeout(timeout)
-    }, 500)
+    }, 1000)
   })
 
   configurePrettierHotkeys([EDITORS.HTML, EDITORS.CSS, EDITORS.JS])
