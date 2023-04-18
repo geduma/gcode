@@ -110,6 +110,7 @@ const createEditor = ({ el, value, language }) => {
 
 const createEditors = () => {
   const values = getHashValue()
+  let timeout = null
 
   EDITORS = {
     HTML: createEditor({ el: HTML_CONTAINER, value: values.html, language: 'html' }),
@@ -119,7 +120,13 @@ const createEditors = () => {
 
   EDITORS.HTML.onDidChangeModelContent(update)
   EDITORS.CSS.onDidChangeModelContent(update)
-  EDITORS.JS.onDidChangeModelContent(update)
+  EDITORS.JS.onDidChangeModelContent(() => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      update()
+      clearTimeout(timeout)
+    }, 500)
+  })
 
   configurePrettierHotkeys([EDITORS.HTML, EDITORS.CSS, EDITORS.JS])
   emmetHTML(monaco)
