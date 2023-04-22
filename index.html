@@ -19,6 +19,7 @@
         <div id="css" class="editor"></div>
         <div class="gutter-row gutter-row-2"></div>
         <div id="js" class="editor"></div>
+        <div id="custom" class="editor"></div>
       </section>
       <div class="gutter-col gutter-col-1"></div>
       <section id="preview">
@@ -35,16 +36,22 @@
     <span>By @geduramc &#9749;</span>
   </footer>
   <dialog>
+    <div class="close-dialog">
+      <img class="close-dialog-btn" src="./public/cancel.svg" alt="cancel-img">
+    </div>
     <div class="layout-container">
       <div class="layout-editors">
-        <div class="layout-html">html</div>
-        <div class="layout-css">css</div>
-        <div class="layout-js">js</div>
+        <div class="layout-html">Html</div> 
+        <div class="layout-css">Css</div>
+        <div class="layout-js">Js</div>
       </div>
-      <div class="layout-preview">preview</div>
+      <div class="layout-preview">Preview</div>
     </div>
-    <div class="custom-editor off disabled">custom-editor</div>
-    <label class="close-dialog">close</label>
+    <div class="layout-custom">
+      <select name="select">
+        <option value="-1">Off</option>
+      </select>
+    </div>
   </dialog>
   <script type="module" src="/src/main.js"></script>
 </body>

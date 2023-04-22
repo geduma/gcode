@@ -14,6 +14,7 @@ const TEMPLATE = '<!DOCTYPE html><html lang="en"><head> <style>CSS_EDITOR</style
 const HTML_CONTAINER = el('#html')
 const CSS_CONTAINER = el('#css')
 const JS_CONTAINER = el('#js')
+const CUSTOM_CONTAINER = el('#custom')
 const PREVIEW_CONTAINER = el('#preview')
 const DIALOG = document.querySelector('dialog')
 const OVERLAY = document.querySelector('.overlay')
@@ -25,6 +26,12 @@ const ENUM_LAYOUTS = {
   js: 3,
   preview: 4
 }
+const CUSTOM_EDITORS = [
+  { id: 5, name: 'Json', language: 'json' },
+  { id: 6, name: 'C#', language: 'csharp' },
+  { id: 7, name: 'Java', language: 'java' },
+  { id: 8, name: 'Sql', language: 'sql' }
+]
 
 let EDITORS = null
 let EMBEDDED = false
@@ -62,17 +69,18 @@ const getHashValue = () => {
     EMBEDDED = true
   }
 
-  const [layouts, html, css, js] = pathname.slice(1).split('%7C')
+  const [layouts, html, css, js, custom] = pathname.slice(1).split('%7C')
   updateLayouts(layouts.length <= 0 ? INITIAL_LAYOUTS : Number(decode(layouts)))
 
   return {
     html: html ? decode(html) : '',
     css: css ? decode(css) : '',
-    js: js ? decode(js) : ''
+    js: js ? decode(js) : '',
+    custom: custom ? decode(custom) : ''
   }
 }
 
-const createHTML = ({ html, css, js }) => {
+const createTemplate = ({ html, css, js }) => {
   return TEMPLATE
     .replace('HTML_EDITOR', html)
     .replace('CSS_EDITOR', css)
@@ -115,7 +123,8 @@ const createEditors = () => {
   EDITORS = {
     HTML: createEditor({ el: HTML_CONTAINER, value: values.html, language: 'html' }),
     CSS: createEditor({ el: CSS_CONTAINER, value: values.css, language: 'css' }),
-    JS: createEditor({ el: JS_CONTAINER, value: values.js, language: 'javascript' })
+    JS: createEditor({ el: JS_CONTAINER, value: values.js, language: 'javascript' }),
+    CUSTOM: createEditor({ el: CUSTOM_CONTAINER, value: values.js, language: 'javascript' })
   }
 
   EDITORS.HTML.onDidChangeModelContent(update)
@@ -196,24 +205,44 @@ const getActiveLayouts = () => {
     if (item.className.indexOf('off') < 0) editors += ENUM_LAYOUTS[item.className.replace('layout-', '')]
   })
 
+  if (el('.layout-custom').className.indexOf('off') < 0) editors = el('select').value
+
   return Number(editors)
 }
 
 const updateLayouts = (layouts) => {
+  const layoutsArr = Array.from(String(layouts), Number)
+
   LAYOUTS_ELEMENTS.forEach(item => {
-    const layoutsArr = Array.from(String(layouts), Number)
     if (!layoutsArr.includes(ENUM_LAYOUTS[item.className.replace('layout-', '')])) item.classList.add('off')
   })
+
+  let customFlag = true
+  CUSTOM_EDITORS.forEach(item => {
+    if (layoutsArr.includes(item.id)) {
+      customFlag = false
+      el('select').value = layouts
+    }
+  })
+
+  if (customFlag) el('.layout-custom').classList.add('off')
 
   setLayout()
 }
 
 const toogleEditor = (elements) => {
   const actives = Array.from(String(getActiveLayouts()), Number)
+
   elements.forEach(el => {
     if (!actives.includes(ENUM_LAYOUTS[el.getAttribute('id')])) el.style.display = 'none'
     else el.style.display = 'block'
   })
+
+  if (actives.length === 1 && actives[0] > 4) {
+    CUSTOM_CONTAINER.style.display = 'block'
+    document.documentElement.style.setProperty('--custom-editor', CUSTOM_EDITORS.find(x => x.id === actives[0]).name)
+    document.documentElement.style.setProperty('--custom-editor', 'FELIPE')
+  } else CUSTOM_CONTAINER.style.display = 'none'
 }
 
 const setLayout = () => {
@@ -245,13 +274,14 @@ const setLayout = () => {
 
 const setHashUrl = () => {
   let hash = `${encode(getActiveLayouts())}`
-  if (notEmpty()) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}`
+  const customValue = 'custom-value'
+  if (notEmpty()) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}|${encode(customValue)}`
 
   window.history.replaceState(null, null, `/${hash}`)
 }
 
 const update = () => {
-  el('iframe').setAttribute('srcdoc', createHTML({
+  el('iframe').setAttribute('srcdoc', createTemplate({
     html: EDITORS.HTML.getValue(),
     css: EDITORS.CSS.getValue(),
     js: EDITORS.JS.getValue()
@@ -260,14 +290,28 @@ const update = () => {
   setHashUrl()
 }
 
+const loadCustomList = () => {
+  const elList = el('select')
+  let elOption = null
+
+  CUSTOM_EDITORS.forEach(item => {
+    elOption = document.createElement('option')
+    elOption.value = item.id
+    elOption.innerText = item.name
+
+    elList.appendChild(elOption)
+  })
+}
+
 const init = () => {
+  loadCustomList()
   createEditors()
   update()
 
   if (EMBEDDED) embedConfig()
 }
 
-el('.close-dialog').addEventListener('click', () => {
+el('.close-dialog-btn').addEventListener('click', () => {
   DIALOG.style.visibility = 'hidden'
   OVERLAY.style.display = 'none'
 })
@@ -286,11 +330,30 @@ el('.layout').addEventListener('click', (e) => {
   openDialog()
 })
 
+el('select').addEventListener('change', (e) => {
+  const customLayout = el('.layout-custom')
+  const customSelected = e.target.value
+
+  if (customSelected >= 0) customLayout.classList.remove('off')
+  else customLayout.classList.add('off')
+
+  LAYOUTS_ELEMENTS.forEach(element => {
+    if (customSelected >= 0) element.classList.add('off')
+    else element.classList.remove('off')
+  })
+
+  update()
+  setLayout()
+})
+
 LAYOUTS_ELEMENTS.forEach(item => {
   item.addEventListener('click', (e) => {
     const element = e.target
     if (!element.classList.contains('off')) element.classList.add('off')
     else element.classList.remove('off')
+
+    el('.layout-custom').classList.add('off')
+    el('select').value = -1
 
     update()
     setLayout()
