@@ -4,7 +4,7 @@
   background-color: #242424;
   overflow: hidden;
   font-family: IBM, monospace;
-  --custom-editor: 'CUSTOM-EDITOR';
+  --custom-editor: url('/js.svg');
 }
 
 /* split.js */
@@ -76,29 +76,29 @@ section {
 }
 
 #html::after {
-  background-image: url('/public/html.svg');
+  background-image: url('/html.svg');
   width: 30px;
   height: 30px;
 }
 
 #css::after {
-  background-image: url('/public/css.svg');
+  background-image: url('/css.svg');
   width: 30px;
   height: 30px;
 }
 
 #js::after {
-  background-image: url('/public/js.svg');
+  background-image: url('/js.svg');
   width: 30px;
   height: 30px;
   margin: 5px;
 }
 
 #custom::after {
-  content: var(--custom-editor);
-  font-size: 30px;
-  right: 20px;
-  bottom: 10px;
+  background-image: var(--custom-editor);
+  width: 30px;
+  height: 30px;
+  margin: 5px;
 }
 
 .sidebar {

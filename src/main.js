@@ -19,7 +19,7 @@ const PREVIEW_CONTAINER = el('#preview')
 const DIALOG = document.querySelector('dialog')
 const OVERLAY = document.querySelector('.overlay')
 const LAYOUTS_ELEMENTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js')
-const INITIAL_LAYOUTS = 1234
+const INITIAL_LAYOUTS = '1,2,3,4'
 const ENUM_LAYOUTS = {
   html: 1,
   css: 2,
@@ -27,10 +27,13 @@ const ENUM_LAYOUTS = {
   preview: 4
 }
 const CUSTOM_EDITORS = [
-  { id: 5, name: 'Json', language: 'json' },
-  { id: 6, name: 'C#', language: 'csharp' },
-  { id: 7, name: 'Java', language: 'java' },
-  { id: 8, name: 'Sql', language: 'sql' }
+  { id: 5, name: 'csharp', language: 'csharp' },
+  { id: 6, name: 'python', language: 'python' },
+  { id: 7, name: 'json', language: 'json' },
+  { id: 8, name: 'java', language: 'java' },
+  { id: 9, name: 'sql', language: 'sql' },
+  { id: 10, name: 'shell', language: 'shell' },
+  { id: 11, name: 'typescript', language: 'typescript' }
 ]
 
 let EDITORS = null
@@ -70,7 +73,7 @@ const getHashValue = () => {
   }
 
   const [layouts, html, css, js, custom] = pathname.slice(1).split('%7C')
-  updateLayouts(layouts.length <= 0 ? INITIAL_LAYOUTS : Number(decode(layouts)))
+  updateLayouts(layouts.length <= 0 ? INITIAL_LAYOUTS : decode(layouts))
 
   return {
     html: html ? decode(html) : '',
@@ -118,13 +121,14 @@ const createEditor = ({ el, value, language }) => {
 
 const createEditors = () => {
   const values = getHashValue()
+  const actives = getActiveLayouts().split(',')
   let timeout = null
 
   EDITORS = {
     HTML: createEditor({ el: HTML_CONTAINER, value: values.html, language: 'html' }),
     CSS: createEditor({ el: CSS_CONTAINER, value: values.css, language: 'css' }),
     JS: createEditor({ el: JS_CONTAINER, value: values.js, language: 'javascript' }),
-    CUSTOM: createEditor({ el: CUSTOM_CONTAINER, value: values.js, language: 'javascript' })
+    CUSTOM: createEditor({ el: CUSTOM_CONTAINER, value: values.custom, language: (actives.length === 1 && Number(actives[0]) > 4) ? CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language : 'plaintext' })
   }
 
   EDITORS.HTML.onDidChangeModelContent(update)
@@ -136,6 +140,7 @@ const createEditors = () => {
       clearTimeout(timeout)
     }, 1000)
   })
+  EDITORS.CUSTOM.onDidChangeModelContent(update)
 
   configurePrettierHotkeys([EDITORS.HTML, EDITORS.CSS, EDITORS.JS])
   emmetHTML(monaco)
@@ -144,7 +149,7 @@ const createEditors = () => {
 }
 
 const notEmpty = () => {
-  return (EDITORS.HTML.getValue().length > 0 || EDITORS.CSS.getValue().length > 0 || EDITORS.JS.getValue().length > 0)
+  return (EDITORS.HTML.getValue().length > 0 || EDITORS.CSS.getValue().length > 0 || EDITORS.JS.getValue().length > 0 || EDITORS.CUSTOM.getValue().length > 0)
 }
 
 const copyToClipBoard = async ({ pattern, text, position }) => {
@@ -202,24 +207,25 @@ const embedConfig = () => {
 const getActiveLayouts = () => {
   let editors = ''
   LAYOUTS_ELEMENTS.forEach(item => {
-    if (item.className.indexOf('off') < 0) editors += ENUM_LAYOUTS[item.className.replace('layout-', '')]
+    if (item.className.indexOf('off') < 0) editors += `${ENUM_LAYOUTS[item.className.replace('layout-', '')]},`
   })
+  editors.slice(0, -1)
 
   if (el('.layout-custom').className.indexOf('off') < 0) editors = el('select').value
 
-  return Number(editors)
+  return editors
 }
 
 const updateLayouts = (layouts) => {
-  const layoutsArr = Array.from(String(layouts), Number)
+  const layoutsArr = layouts.split(',')
 
   LAYOUTS_ELEMENTS.forEach(item => {
-    if (!layoutsArr.includes(ENUM_LAYOUTS[item.className.replace('layout-', '')])) item.classList.add('off')
+    if (!layoutsArr.includes(ENUM_LAYOUTS[item.className.replace('layout-', '')].toString())) item.classList.add('off')
   })
 
   let customFlag = true
   CUSTOM_EDITORS.forEach(item => {
-    if (layoutsArr.includes(item.id)) {
+    if (layoutsArr.includes(item.id.toString())) {
       customFlag = false
       el('select').value = layouts
     }
@@ -231,29 +237,29 @@ const updateLayouts = (layouts) => {
 }
 
 const toogleEditor = (elements) => {
-  const actives = Array.from(String(getActiveLayouts()), Number)
+  const actives = getActiveLayouts().split(',')
 
   elements.forEach(el => {
-    if (!actives.includes(ENUM_LAYOUTS[el.getAttribute('id')])) el.style.display = 'none'
+    if (!actives.includes(ENUM_LAYOUTS[el.getAttribute('id')].toString())) el.style.display = 'none'
     else el.style.display = 'block'
   })
 
   if (actives.length === 1 && actives[0] > 4) {
     CUSTOM_CONTAINER.style.display = 'block'
-    document.documentElement.style.setProperty('--custom-editor', CUSTOM_EDITORS.find(x => x.id === actives[0]).name)
-    document.documentElement.style.setProperty('--custom-editor', 'FELIPE')
+    document.documentElement.style.setProperty('--custom-editor', `url('/${CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language}.svg')`)
+    if (EDITORS) createCustomEditor()
   } else CUSTOM_CONTAINER.style.display = 'none'
 }
 
 const setLayout = () => {
   toogleEditor([HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER, PREVIEW_CONTAINER])
 
-  const actives = Array.from(String(getActiveLayouts()), Number)
+  const actives = getActiveLayouts().split(',')
   const grid = el('.grid')
   const gridRows = el('.grid-rows')
 
   // columns
-  if (actives.includes(4)) {
+  if (actives.includes('4')) {
     if (actives.length > 1) {
       grid.style.gridTemplateColumns = '49.5% 1% 49.5%'
       gridRows.style.display = ''
@@ -267,15 +273,14 @@ const setLayout = () => {
   }
 
   // rows
-  if (actives.filter(x => x !== 4).length === 1) gridRows.style.gridTemplateRows = '100%'
-  if (actives.filter(x => x !== 4).length === 2) gridRows.style.gridTemplateRows = '49.5% 1% 49.5%'
-  if (actives.filter(x => x !== 4).length === 3) gridRows.style.gridTemplateRows = '32.6% 1% 32.6% 1% 32.6%'
+  if (actives.filter(x => x !== '4').length === 1) gridRows.style.gridTemplateRows = '100%'
+  if (actives.filter(x => x !== '4').length === 2) gridRows.style.gridTemplateRows = '49.5% 1% 49.5%'
+  if (actives.filter(x => x !== '4').length === 3) gridRows.style.gridTemplateRows = '32.6% 1% 32.6% 1% 32.6%'
 }
 
 const setHashUrl = () => {
   let hash = `${encode(getActiveLayouts())}`
-  const customValue = 'custom-value'
-  if (notEmpty()) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}|${encode(customValue)}`
+  if (notEmpty()) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}|${encode(EDITORS.CUSTOM.getValue())}`
 
   window.history.replaceState(null, null, `/${hash}`)
 }
@@ -303,6 +308,12 @@ const loadCustomList = () => {
   })
 }
 
+const createCustomEditor = () => {
+  const actives = getActiveLayouts().split(',')
+  const model = EDITORS.CUSTOM.getModel()
+  monaco.editor.setModelLanguage(model, CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language)
+}
+
 const init = () => {
   loadCustomList()
   createEditors()
@@ -311,6 +322,7 @@ const init = () => {
   if (EMBEDDED) embedConfig()
 }
 
+// events
 el('.close-dialog-btn').addEventListener('click', () => {
   DIALOG.style.visibility = 'hidden'
   OVERLAY.style.display = 'none'
@@ -322,7 +334,7 @@ el('.copy').addEventListener('click', (e) => {
 
 el('.embed').addEventListener('click', (e) => {
   const url = `${window.location.origin}/embed${window.location.pathname}`
-  const iframe = `<iframe src="${url}" style="width=100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
+  const iframe = `<iframe src="${url}" style="width: 100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
   copyToClipBoard({ pattern: e.target, text: iframe })
 })
 
