@@ -114,7 +114,7 @@ const createEditor = ({ el, value, language }) => {
     autoIndent: true,
     formatOnPaste: true,
     formatOnType: true,
-    lineNumbers: 'off',
+    // lineNumbers: 'off',
     wordWrap: 'on'
   })
 }
