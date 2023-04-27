@@ -258,7 +258,6 @@ const setLayout = () => {
   const grid = el('.grid')
   const gridRows = el('.grid-rows')
 
-  console.log(actives)
   // columns
   if (actives.includes('4')) {
     if (actives.length > 1) {
@@ -315,7 +314,20 @@ const createCustomEditor = () => {
   monaco.editor.setModelLanguage(model, CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language)
 }
 
+const createLoader = () => {
+  const loader = document.createElement('span')
+  loader.className = 'loader'
+  document.body.appendChild(loader)
+  OVERLAY.style.display = 'block'
+
+  setTimeout(() => {
+    loader.remove()
+    OVERLAY.style.display = 'none'
+  }, 2000)
+}
+
 const init = () => {
+  createLoader()
   loadCustomList()
   createEditors()
   update()
