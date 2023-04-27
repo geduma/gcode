@@ -315,14 +315,19 @@ const createCustomEditor = () => {
 }
 
 const createLoader = () => {
-  const loader = document.createElement('span')
-  loader.className = 'loader'
-  document.body.appendChild(loader)
+  const app = el('#app')
+  const footer = el('footer')
+
+  app.style.display = 'none'
+  footer.style.display = 'none'
   OVERLAY.style.display = 'block'
 
   setTimeout(() => {
-    loader.remove()
+    el('.loader').remove()
     OVERLAY.style.display = 'none'
+
+    app.style.display = 'block'
+    footer.style.display = 'flex'
   }, 2000)
 }
 
