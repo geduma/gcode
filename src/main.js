@@ -209,7 +209,7 @@ const getActiveLayouts = () => {
   LAYOUTS_ELEMENTS.forEach(item => {
     if (item.className.indexOf('off') < 0) editors += `${ENUM_LAYOUTS[item.className.replace('layout-', '')]},`
   })
-  editors.slice(0, -1)
+  editors = editors.slice(0, -1)
 
   if (el('.layout-custom').className.indexOf('off') < 0) editors = el('select').value
 
@@ -258,6 +258,7 @@ const setLayout = () => {
   const grid = el('.grid')
   const gridRows = el('.grid-rows')
 
+  console.log(actives)
   // columns
   if (actives.includes('4')) {
     if (actives.length > 1) {
@@ -347,7 +348,9 @@ el('select').addEventListener('change', (e) => {
   const customSelected = e.target.value
 
   if (customSelected >= 0) customLayout.classList.remove('off')
-  else customLayout.classList.add('off')
+  else {
+    customLayout.classList.add('off')
+  }
 
   LAYOUTS_ELEMENTS.forEach(element => {
     if (customSelected >= 0) element.classList.add('off')
