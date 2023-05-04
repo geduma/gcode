@@ -208,7 +208,8 @@ const closeDialog = () => {
 
 const embedConfig = () => {
   document.querySelectorAll('.control').forEach(btn => {
-    if (btn.className.indexOf('copy') < 0) btn.remove()
+    if (btn.className.indexOf('open') < 0) btn.remove()
+    else btn.style.display = 'block'
   })
 }
 
@@ -395,6 +396,10 @@ el('.embed').addEventListener('click', (e) => {
 
 el('.layout').addEventListener('click', (e) => {
   openDialog()
+})
+
+el('.open').addEventListener('click', (e) => {
+  window.open(window.location.href, '_blank')
 })
 
 el('select').addEventListener('change', (e) => {
