@@ -334,3 +334,7 @@ div.editor > button {
 .control {
   position: relative;
 }
+
+.open {
+  display: none;
+}
