@@ -153,7 +153,7 @@ const notEmpty = () => {
 }
 
 const copyToClipBoard = async ({ pattern, text, position }) => {
-  if (pattern.lastChild.tagName === 'SPAN') pattern.lastChild.remove()
+  if (pattern.lastChild && pattern.lastChild.tagName === 'SPAN') pattern.lastChild.remove()
 
   const tooltip = document.createElement('span')
   tooltip.innerText = 'copied!'
@@ -163,15 +163,18 @@ const copyToClipBoard = async ({ pattern, text, position }) => {
   tooltip.style.textAlign = 'center'
   tooltip.style.borderRadius = '6px'
   tooltip.style.padding = '2px 4px'
-  tooltip.style.position = 'absolute'
   tooltip.style.zIndex = '1'
   tooltip.style.fontSize = '10px'
+  tooltip.style.position = 'absolute'
   tooltip.style.top = '50%'
   tooltip.style.left = '50%'
   tooltip.style.transform = 'translate(-50%, -50%)'
-  tooltip.style.marginTop = `-${pattern.offsetHeight}px`
-  pattern.style.position = 'relative'
   pattern.appendChild(tooltip)
+
+  if (position === 'top') tooltip.style.marginTop = `-${pattern.offsetHeight}px`
+  if (position === 'bottom') tooltip.style.marginTop = `${pattern.offsetHeight}px`
+  if (position === 'right') tooltip.style.marginLeft = `${((pattern.offsetWidth / 2) + (tooltip.offsetWidth / 2))}px`
+  if (position === 'left') tooltip.style.marginLeft = `-${(pattern.offsetWidth / 2) + (tooltip.offsetWidth / 2)}px`
 
   // copy
   if (!navigator.clipboard) {
@@ -190,12 +193,17 @@ const copyToClipBoard = async ({ pattern, text, position }) => {
 
   setTimeout(() => {
     tooltip.remove()
-  }, 1500)
+  }, 1000)
 }
 
 const openDialog = () => {
   DIALOG.style.visibility = 'visible'
   OVERLAY.style.display = 'block'
+}
+
+const closeDialog = () => {
+  DIALOG.style.visibility = 'hidden'
+  OVERLAY.style.display = 'none'
 }
 
 const embedConfig = () => {
@@ -331,9 +339,39 @@ const createLoader = () => {
   }, 2000)
 }
 
+const createCopyBtns = () => {
+  const btn = document.createElement('button')
+  btn.title = 'Copy to clipboard'
+
+  HTML_CONTAINER.appendChild(btn)
+  CSS_CONTAINER.appendChild(btn.cloneNode(true))
+  JS_CONTAINER.appendChild(btn.cloneNode(true))
+  CUSTOM_CONTAINER.appendChild(btn.cloneNode(true))
+
+  document.querySelectorAll('div.editor>button').forEach(item => {
+    item.addEventListener('click', (e) => {
+      switch (item.parentElement.id) {
+        case 'html':
+          copyToClipBoard({ pattern: item, text: EDITORS.HTML.getValue(), position: 'left' })
+          break
+        case 'css':
+          copyToClipBoard({ pattern: item, text: EDITORS.CSS.getValue(), position: 'left' })
+          break
+        case 'js':
+          copyToClipBoard({ pattern: item, text: EDITORS.JS.getValue(), position: 'left' })
+          break
+        case 'custom':
+          copyToClipBoard({ pattern: item, text: EDITORS.CUSTOM.getValue(), position: 'left' })
+          break
+      }
+    })
+  })
+}
+
 const init = () => {
   createLoader()
   loadCustomList()
+  createCopyBtns()
   createEditors()
   update()
 
@@ -342,18 +380,17 @@ const init = () => {
 
 // events
 el('.close-dialog-btn').addEventListener('click', () => {
-  DIALOG.style.visibility = 'hidden'
-  OVERLAY.style.display = 'none'
+  closeDialog()
 })
 
 el('.copy').addEventListener('click', (e) => {
-  copyToClipBoard({ pattern: e.target, text: window.location.href })
+  copyToClipBoard({ pattern: e.target, text: window.location.href, position: 'top' })
 })
 
 el('.embed').addEventListener('click', (e) => {
   const url = `${window.location.origin}/embed${window.location.pathname}`
   const iframe = `<iframe src="${url}" style="width: 100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
-  copyToClipBoard({ pattern: e.target, text: iframe })
+  copyToClipBoard({ pattern: e.target, text: iframe, position: 'top' })
 })
 
 el('.layout').addEventListener('click', (e) => {
@@ -390,6 +427,12 @@ LAYOUTS_ELEMENTS.forEach(item => {
     update()
     setLayout()
   })
+})
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    if (DIALOG.style.visibility === 'visible') closeDialog()
+  }
 })
 
 init()

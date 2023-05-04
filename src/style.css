@@ -125,13 +125,15 @@ section {
 .editor {
   position: relative;
   overflow: hidden;
+  padding-right: 20px;
+  background-color: #1E1E1E;
 }
 
 .editor::after {
   content: '';
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  right: 1px;
+  bottom: 35px;
   z-index: 1;
   background-repeat: no-repeat;
   opacity: .4;
@@ -139,28 +141,27 @@ section {
 
 #html::after {
   background-image: url('/html.svg');
-  width: 30px;
-  height: 30px;
+  width: 18px;
+  height: 18px;
 }
 
 #css::after {
   background-image: url('/css.svg');
-  width: 30px;
-  height: 30px;
+  width: 18px;
+  height: 18px;
 }
 
 #js::after {
   background-image: url('/js.svg');
-  width: 30px;
-  height: 30px;
-  margin: 5px;
+  width: 16px;
+  height: 16px;
+  right: 3px;
 }
 
 #custom::after {
   background-image: var(--custom-editor);
-  width: 30px;
-  height: 30px;
-  margin: 5px;
+  width: 20px;
+  height: 20px;
 }
 
 .sidebar {
@@ -314,4 +315,22 @@ footer > a.gfmc-url {
 
 footer > a.gfmc-url:hover {
   text-decoration: underline;
+}
+
+div.editor > button {
+  cursor: pointer;
+  position: absolute;
+  right: 1px;
+  bottom: 5px;
+  z-index: 1;
+  background-image: url('/clipboard.svg');
+  width: 20px;
+  height: 20px;
+  background-color: #00000000;
+  border: none;
+  opacity: .4;
+}
+
+.control {
+  position: relative;
 }
