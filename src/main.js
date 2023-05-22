@@ -6,6 +6,7 @@ import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import HtmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 import CssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import JsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import { emmetHTML } from 'emmet-monaco-es'
 import { configurePrettierHotkeys } from './utils/configurePrettier'
 
@@ -28,12 +29,14 @@ const ENUM_LAYOUTS = {
 }
 const CUSTOM_EDITORS = [
   { id: 5, name: 'csharp', language: 'csharp' },
-  { id: 6, name: 'python', language: 'python' },
-  { id: 7, name: 'json', language: 'json' },
+  { id: 6, name: 'php', language: 'php' },
+  { id: 7, name: 'python', language: 'python' },
   { id: 8, name: 'java', language: 'java' },
-  { id: 9, name: 'sql', language: 'sql' },
+  { id: 9, name: 'json', language: 'json' },
   { id: 10, name: 'shell', language: 'shell' },
-  { id: 11, name: 'typescript', language: 'typescript' }
+  { id: 11, name: 'sql', language: 'sql' },
+  { id: 12, name: 'typescript', language: 'typescript' },
+  { id: 13, name: 'xml', language: 'xml' }
 ]
 
 let EDITORS = null
@@ -44,7 +47,9 @@ window.MonacoEnvironment = {
     switch (label) {
       case 'html': return new HtmlWorker()
       case 'javascript': return new JsWorker()
+      case 'typescript': return new JsWorker()
       case 'css': return new CssWorker()
+      case 'json': return new JsonWorker()
       default: return new EditorWorker()
     }
   }
