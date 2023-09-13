@@ -439,9 +439,14 @@ LAYOUTS_ELEMENTS.forEach(item => {
   })
 })
 
+// shortcuts
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     if (DIALOG.style.visibility === 'visible') closeDialog()
+  }
+
+  if (event.ctrlKey && event.key === 'Enter') {
+    openDialog()
   }
 })
 
