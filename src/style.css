@@ -311,6 +311,7 @@ select:hover {
 footer > a.gfmc-url {
   color: rgba(255, 255, 255, 0.87);
   text-decoration: none;
+  margin-top: 0.4rem;
 }
 
 footer > a.gfmc-url:hover {
