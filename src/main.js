@@ -344,7 +344,7 @@ const createLoader = () => {
 
     app.style.display = 'block'
     footer.style.display = 'flex'
-  }, 2000)
+  }, 500)
 }
 
 const createCopyBtns = () => {
