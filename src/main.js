@@ -27,6 +27,7 @@ const ENUM_LAYOUTS = {
   js: 3,
   preview: 4
 }
+
 const CUSTOM_EDITORS = [
   { id: 5, name: 'csharp', language: 'csharp' },
   { id: 6, name: 'php', language: 'php' },
@@ -36,7 +37,8 @@ const CUSTOM_EDITORS = [
   { id: 10, name: 'shell', language: 'shell' },
   { id: 11, name: 'sql', language: 'sql' },
   { id: 12, name: 'typescript', language: 'typescript' },
-  { id: 13, name: 'xml', language: 'xml' }
+  { id: 13, name: 'xml', language: 'xml' },
+  { id: 14, name: 'markdown', language: 'markdown' }
 ]
 
 let EDITORS = null
