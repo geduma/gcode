@@ -9,5 +9,5 @@
   <img src="https://user-images.githubusercontent.com/26848451/226559937-65681cd3-7d8a-4f47-9e02-677a7bd01ad5.png" />
 </p>
 <p align="center">
-  🚀 Editor: https://code.geduramc.com
+  🚀 Editor: https://code.geduma.com
 </p>
