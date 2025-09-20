@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/icon" sizes="16x16" href="/gcode-icon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>code</title>
+</head>
+
+<style> body{background-color:#242424}#app{display:none}footer{display:none} </style>
+
+<body>
+  <div class="overlay">
+    <span class="loader"></span>
+  </div>
+  <div id="app">
+    <div class="grid">
+      <section class="editors grid-rows">
+        <div id="html" class="editor"></div>
+        <div class="gutter-row gutter-row-1"></div>
+        <div id="css" class="editor"></div>
+        <div class="gutter-row gutter-row-2"></div>
+        <div id="js" class="editor"></div>
+        <div id="custom" class="editor"></div>
+      </section>
+      <div class="gutter-col gutter-col-1"></div>
+      <section id="preview">
+        <iframe src="" frameborder="0"></iframe>
+      </section>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-controls">
+      <button class="shortcuts control disabled">Shortcuts</button>
+      <button class="layout control">Layout</button>
+      <button class="copy control">Copy URL</button>
+      <button class="open control">Open Editor</button>
+      <button class="embed control">Embed Editor</button>
+    </div>
+    <a class="gfmc-url" href="https://geduramc.com/" target="_blank">By @geduramc</a>
+  </footer>
+  <dialog>
+    <div class="close-dialog">
+      <img class="close-dialog-btn" src="./cancel.svg" alt="cancel-img">
+    </div>
+    <div class="layout-container">
+      <div class="layout-editors">
+        <div class="layout-html">html</div>
+        <div class="layout-css">css</div>
+        <div class="layout-js">js</div>
+      </div>
+      <div class="layout-preview">preview</div>
+    </div>
+    <div class="layout-custom">
+      <select name="select">
+        <option value="-1">off</option>
+      </select>
+    </div>
+  </dialog>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
