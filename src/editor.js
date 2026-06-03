@@ -219,8 +219,13 @@ const setLayout = (EDITORS) => {
   const grid = el('.grid')
   const gridRows = el('.grid-rows')
 
+  const htmlOn = actives.includes('1')
+  const cssOn = actives.includes('2')
+  const jsOn = actives.includes('3')
+  const editorCount = [htmlOn, cssOn, jsOn].filter(Boolean).length
+
   if (actives.includes('4')) {
-    if (actives.length > 1) {
+    if (editorCount > 0) {
       grid.style.gridTemplateColumns = '49.5% 1% 49.5%'
       gridRows.style.display = ''
     } else {
@@ -232,9 +237,19 @@ const setLayout = (EDITORS) => {
     gridRows.style.display = ''
   }
 
-  if (actives.filter(x => x !== '4').length === 1) gridRows.style.gridTemplateRows = '100%'
-  if (actives.filter(x => x !== '4').length === 2) gridRows.style.gridTemplateRows = '49.5% 1% 49.5%'
-  if (actives.filter(x => x !== '4').length === 3) gridRows.style.gridTemplateRows = '32.6% 1% 32.6% 1% 32.6%'
+  // Build grid-template-rows: 1fr for active editors, 5px gutters between, 0px for hidden
+  const rows = []
+  rows.push(htmlOn ? '1fr' : '0px')
+  rows.push(htmlOn && cssOn ? '5px' : '0px')
+  rows.push(cssOn ? '1fr' : '0px')
+  rows.push(cssOn && jsOn ? '5px' : '0px')
+  rows.push(jsOn ? '1fr' : '0px')
+  gridRows.style.gridTemplateRows = rows.join(' ')
+
+  // Keep editors in grid flow (override toggleEditor's display:none)
+  HTML_CONTAINER.style.display = ''
+  CSS_CONTAINER.style.display = ''
+  JS_CONTAINER.style.display = ''
 }
 
 export {
