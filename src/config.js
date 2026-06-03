@@ -11,9 +11,10 @@ const PREVIEW_COLUMN = el('.preview-column')
 const CONSOLE_PANEL = el('#console')
 const DIALOG = document.querySelector('dialog')
 const OVERLAY = document.querySelector('.overlay')
+const SHORTCUTS_DIALOG = document.querySelector('.shortcuts-dialog')
 const LAYOUTS_ELEMENTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js,.layout-console')
 
-const INITIAL_LAYOUTS = '1,2,3,4,15'
+const INITIAL_LAYOUTS = '1,2,3,4'
 
 const ENUM_LAYOUTS = {
   html: 1,
@@ -48,6 +49,7 @@ export {
   PREVIEW_COLUMN,
   CONSOLE_PANEL,
   DIALOG,
+  SHORTCUTS_DIALOG,
   OVERLAY,
   LAYOUTS_ELEMENTS,
   INITIAL_LAYOUTS,

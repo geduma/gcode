@@ -35,7 +35,7 @@
   </div>
   <footer>
     <div class="footer-controls">
-      <button class="shortcuts control disabled">Shortcuts</button>
+      <button class="shortcuts control">Shortcuts</button>
       <button class="layout control">Layout</button>
       <button class="copy control">Copy URL</button>
       <button class="open control">Open Editor</button>
@@ -62,6 +62,27 @@
       <select name="select">
         <option value="-1">off</option>
       </select>
+    </div>
+  </dialog>
+  <dialog class="shortcuts-dialog">
+    <div class="close-dialog">
+      <img class="close-dialog-btn" src="./cancel.svg" alt="cancel-img">
+    </div>
+    <div class="shortcuts-container">
+      <table>
+        <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><kbd>Ctrl/Cmd + Enter</kbd></td><td>Open Layout dialog</td></tr>
+          <tr><td><kbd>Escape</kbd></td><td>Close current dialog</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + .</kbd></td><td>Open Shortcuts dialog</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + P</kbd></td><td>Open command palette</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + S</kbd></td><td>Format code</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + Z</kbd></td><td>Undo</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + Shift + Z</kbd></td><td>Redo</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + F</kbd></td><td>Find</td></tr>
+          <tr><td><kbd>Ctrl/Cmd + D</kbd></td><td>Add selection to next find match</td></tr>
+        </tbody>
+      </table>
     </div>
   </dialog>
   <script type="module" src="/src/main.js"></script>

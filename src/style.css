@@ -273,10 +273,67 @@ dialog{
   text-align: center;
   background-color: #212121;
   min-width: 500px;
-  border: solid 1px;
+  border: solid 1px #444;
   visibility: hidden;
   z-index: 2;
   border-radius: 10px;
+}
+
+.shortcuts-dialog {
+  animation: appear 350ms ease-in 1;
+  display: block;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: left;
+  background-color: #212121;
+  min-width: 400px;
+  border: solid 1px #444;
+  visibility: hidden;
+  z-index: 2;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.shortcuts-dialog .close-dialog {
+  margin-bottom: 1rem;
+}
+
+.shortcuts-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.shortcuts-container th {
+  text-align: left;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #333;
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.shortcuts-container td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #2a2a2a;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.shortcuts-container tr:last-child td {
+  border-bottom: none;
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: inherit;
+  color: #d4d4d4;
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  border-radius: 3px;
 }
 
 .close-dialog {

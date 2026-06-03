@@ -9,6 +9,7 @@ import {
   CUSTOM_CONTAINER,
   CONSOLE_PANEL,
   DIALOG,
+  SHORTCUTS_DIALOG,
   OVERLAY,
   LAYOUTS_ELEMENTS
 } from './config'
@@ -92,12 +93,14 @@ const copyToClipBoard = async ({ pattern, text, position }) => {
 }
 
 const openDialog = () => {
+  SHORTCUTS_DIALOG.style.visibility = 'hidden'
   DIALOG.style.visibility = 'visible'
   OVERLAY.style.display = 'block'
 }
 
 const closeDialog = () => {
   DIALOG.style.visibility = 'hidden'
+  SHORTCUTS_DIALOG.style.visibility = 'hidden'
   OVERLAY.style.display = 'none'
 }
 
@@ -185,6 +188,11 @@ el('.layout').addEventListener('click', (e) => {
   openDialog()
 })
 
+el('.shortcuts').addEventListener('click', (e) => {
+  SHORTCUTS_DIALOG.style.visibility = 'visible'
+  OVERLAY.style.display = 'block'
+})
+
 el('.open').addEventListener('click', (e) => {
   window.open(window.location.href, '_blank')
 })
@@ -223,11 +231,18 @@ LAYOUTS_ELEMENTS.forEach(item => {
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
-    if (DIALOG.style.visibility === 'visible') closeDialog()
+    if (DIALOG.style.visibility === 'visible' || SHORTCUTS_DIALOG.style.visibility === 'visible') closeDialog()
   }
 
   if (event.ctrlKey && event.key === 'Enter') {
     openDialog()
+  }
+
+  if ((event.ctrlKey || event.metaKey) && event.key === '.') {
+    event.preventDefault()
+    DIALOG.style.visibility = 'hidden'
+    SHORTCUTS_DIALOG.style.visibility = 'visible'
+    OVERLAY.style.display = 'block'
   }
 })
 
