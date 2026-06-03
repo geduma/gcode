@@ -6,9 +6,9 @@ This file is intended for AI coding agents to understand the project conventions
 
 ## 1. Project Overview
 
-**gcode** is a browser-based online code editor (like CodePen/JSFiddle). Users write HTML, CSS, and JavaScript in split panes and see a live preview in an iframe. State persists in the URL via Base64. Hosted at https://code.geduma.com.
+**gcode** is a browser-based online code editor (like CodePen/JSFiddle). Users write HTML, CSS, and JavaScript in split panes and see a live preview in an iframe. State persists in the URL via lz-string compression in the hash fragment. Hosted at https://code.geduma.com.
 
-**Tech Stack:** Vite + Monaco Editor + split-grid + js-base64 + emmet-monaco-es (Vanilla JS, no framework)
+**Tech Stack:** Vite + Monaco Editor + split-grid + lz-string + js-base64 + emmet-monaco-es (Vanilla JS, no framework)
 
 **Node version:** 22.14.0 (engines requirement)
 
@@ -41,8 +41,8 @@ gcode/
 │   └── {language}.svg            # 16 language icons (csharp, css, html, java, js, json, markdown, php, python, shell, sql, typescript, xml)
 ├── src/
 │   ├── config.js                 # Constants and configuration (~50 lines)
-│   ├── editor.js                 # Monaco engine + URL state + layout management (~235 lines)
-│   ├── main.js                   # Orchestrator: UI, init, event wiring (~232 lines)
+│   ├── editor.js                 # Monaco engine + URL state + layout management (~290 lines)
+│   ├── main.js                   # Orchestrator: UI, init, event wiring (~260 lines)
 │   ├── style.css                 # All styles (~341 lines)
 │   └── utils/
 │       ├── configurePrettier.js  # Re-layouts editors on resize + Ctrl/Cmd+P quick command
@@ -115,11 +115,11 @@ No Monaco imports, no URL encoding/decoding, no layout state logic — just orch
 - When a single custom editor is active (id 5-14), all other editors hidden, `--custom-editor` CSS custom property set for the language badge icon
 
 ### 4.5 URL State
-- Format: `/{layouts}|{html_b64}|{css_b64}|{js_b64}|{custom_b64}`
-- Encoded with `js-base64` (`encode`/`decode`)
-- `setHashUrl()`: reads editors, encodes, calls `window.history.replaceState`
-- `getHashValue()`: decodes on load, also detects `/embed` prefix
-- If editors are empty, hash contains only layouts (no `|` delimiters after)
+- Format (hash fragment): `#/{layouts}|{html}|{css}|{js}|{custom}` compressed with lz-string `compressToEncodedURIComponent`
+- `setHashUrl()`: reads editors, combines into one payload string, compresses with lz-string, writes to `window.history.replaceState` with `#/` prefix
+- `getHashValue()`: reads from `window.location.hash`, decompresses with lz-string. Falls back to pathname + `js-base64` `decode()` for legacy URLs
+- If editors are empty, payload contains only layouts (no `|` delimiters after)
+- `/embed` prefix in pathname activates embed mode (data still in hash)
 
 ### 4.6 Event Listeners
 Registered at module level (after function definitions, before `init()`):
@@ -194,7 +194,7 @@ Registered at module level (after function definitions, before `init()`):
 
 - `src/utils/editor-hotkeys.js` is imported nowhere; contains commented copy URL shortcut
 - `index.html` has inline `<style>` before `<body>` (sets `#app` and `footer` to `display: none` for loader)
-- Button "Shortcuts" in footer is `.disabled` placeholder
+- Button "Shortcuts" in footer was a `.disabled` placeholder (now functional)
 - `vite.config.js` does not exist (using Vite defaults)
 - No error handling for malformed Base64 in URL
 - No loading/error states for iframe preview
