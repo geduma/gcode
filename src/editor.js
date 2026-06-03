@@ -1,4 +1,5 @@
-import { encode, decode } from 'js-base64'
+import { decode } from 'js-base64'
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import * as monaco from 'monaco-editor'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import HtmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
@@ -178,31 +179,57 @@ const createCustomEditor = (EDITORS) => {
 }
 
 const getHashValue = () => {
-  let { pathname } = window.location
+  let raw = window.location.hash.replace(/^#\//, '')
   let embedded = false
 
-  if (pathname.indexOf('/embed') === 0) {
-    pathname = pathname.replace('/embed', '')
+  if (window.location.pathname.indexOf('/embed') === 0) {
     embedded = true
   }
 
-  const [layouts, html, css, js, custom] = pathname.slice(1).split('%7C')
-  updateLayouts(layouts.length <= 0 ? INITIAL_LAYOUTS : decode(layouts))
+  if (!raw) {
+    let path = window.location.pathname
+    if (path.indexOf('/embed') === 0) {
+      path = path.replace('/embed', '')
+    }
+    raw = path.replace(/^\//, '')
+  }
+
+  const combined = decompressFromEncodedURIComponent(raw)
+  if (combined) {
+    const parts = combined.split('|')
+    updateLayouts(parts[0]?.length > 0 ? parts[0] : INITIAL_LAYOUTS)
+    return {
+      html: parts[1] || '',
+      css: parts[2] || '',
+      js: parts[3] || '',
+      custom: parts[4] || '',
+      embedded
+    }
+  }
+
+  const [layouts, html, css, js, custom] = raw.split('|')
+  updateLayouts(layouts?.length > 0 ? layouts : INITIAL_LAYOUTS)
+
+  const decompress = (v) => {
+    if (!v) return ''
+    const d = decompressFromEncodedURIComponent(v)
+    return d ?? decode(v)
+  }
 
   return {
-    html: html ? decode(html) : '',
-    css: css ? decode(css) : '',
-    js: js ? decode(js) : '',
-    custom: custom ? decode(custom) : '',
+    html: decompress(html),
+    css: decompress(css),
+    js: decompress(js),
+    custom: decompress(custom),
     embedded
   }
 }
 
 const setHashUrl = (EDITORS) => {
-  let hash = `${encode(getActiveLayouts())}`
-  if (notEmpty(EDITORS)) hash += `|${encode(EDITORS.HTML.getValue())}|${encode(EDITORS.CSS.getValue())}|${encode(EDITORS.JS.getValue())}|${encode(EDITORS.CUSTOM.getValue())}`
+  let payload = `${getActiveLayouts()}`
+  if (notEmpty(EDITORS)) payload += `|${EDITORS.HTML.getValue()}|${EDITORS.CSS.getValue()}|${EDITORS.JS.getValue()}|${EDITORS.CUSTOM.getValue()}`
 
-  window.history.replaceState(null, null, `/${hash}`)
+  window.history.replaceState(null, null, `#/${compressToEncodedURIComponent(payload)}`)
 }
 
 const notEmpty = (EDITORS) => {

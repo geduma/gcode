@@ -2,7 +2,7 @@
 
 ## 1. Resumen
 
-gcode es un editor de código online (similar a CodePen/JSFiddle) que permite escribir HTML, CSS y JavaScript en tres paneles divididos y visualizar una vista previa en vivo en un iframe. También soporta editores adicionales para otros lenguajes (Python, Java, C#, PHP, TypeScript, SQL, etc.) que reemplazan la vista previa. El estado del editor se persiste en la URL mediante codificación Base64, permitiendo URLs compartibles.
+gcode es un editor de código online (similar a CodePen/JSFiddle) que permite escribir HTML, CSS y JavaScript en tres paneles divididos y visualizar una vista previa en vivo en un iframe. También soporta editores adicionales para otros lenguajes (Python, Java, C#, PHP, TypeScript, SQL, etc.) que reemplazan la vista previa. El estado del editor se persiste en la URL mediante compresión lz-string en el hash fragment, permitiendo URLs compartibles.
 
 **URL:** https://code.geduma.com
 
@@ -25,7 +25,8 @@ gcode es un editor de código online (similar a CodePen/JSFiddle) que permite es
 | Build        | Vite               | ^6.2.0  | Dev server, bundler, HMR           |
 | Editor       | Monaco Editor      | 0.36.1  | Editor de código (same engine VS Code) |
 | Emmet        | emmet-monaco-es    | 5.2.1   | Abreviaciones HTML/CSS             |
-| URL Encoding | js-base64          | 3.7.5   | Codificación de estado en URL      |
+| Compresión   | lz-string          | ^1.5.0  | Compresión de estado en URL        |
+| URL Encoding | js-base64          | 3.7.5   | Codificación legacy en URL         |
 | Split Panes  | split-grid         | 1.0.11  | Paneles redimensionables (CSS Grid) |
 | Linting      | standard (JS)      | ^17.0.0 | Estilo de código JavaScript        |
 | Runtime      | Node.js            | 22.14.0 | Motor de desarrollo                |
@@ -59,7 +60,7 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 
 **Flujo de datos:**
 1. `init()` en `main.js` → `createLoader()`, `loadCustomList()`, `createCopyBtns()`, `createEditors(update)`
-2. `createEditors()` en `editor.js` llama a `getHashValue()` que lee la URL y decodifica Base64 + restaura el layout
+2. `createEditors()` en `editor.js` llama a `getHashValue()` que lee el hash fragment (`#/...`), descomprime con lz-string + restaura el layout. Fallback a pathname + `js-base64` para URLs legacy
 3. Se crean 4 instancias de Monaco Editor (HTML, CSS, JS, CUSTOM)
 4. Cada editor registra `onDidChangeModelContent` → llama al callback `update()`
 5. `update()` en `main.js` renderiza el iframe via `createTemplate()` y guarda la URL via `setHashUrl()`
@@ -73,7 +74,7 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 ### 5.1 Core
 - **Editor HTML/CSS/JS:** Tres paneles de código con resaltado de sintaxis, autocompletado, y Emmet
 - **Vista previa en vivo:** iframe con `srcdoc` que se actualiza al escribir
-- **Persistencia en URL:** Todo el código se guarda en la URL (pathname + Base64)
+- **Persistencia en URL:** Todo el código se comprime con lz-string y se guarda en el hash fragment de la URL (`#/...`)
 - **URLs compartibles:** Copiar URL con el estado actual del editor
 - **Embed mode:** Prefix `/embed` en la URL oculta los controles y permite embeber en iframes
 
@@ -97,7 +98,7 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 ### 5.5 Footer Controls
 | Botón         | Acción                                  |
 | -------------- | --------------------------------------- |
-| Shortcuts      | Placeholder (deshabilitado)             |
+| Shortcuts      | Abre diálogo con atajos de teclado     |
 | Layout         | Abre diálogo para configurar paneles    |
 | Copy URL       | Copia la URL actual al portapapeles     |
 | Open Editor    | Abre la URL en una nueva pestaña        |
@@ -128,13 +129,15 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 ## 7. Formato de URL
 
 ```
-/{layouts}|{html_base64}|{css_base64}|{js_base64}|{custom_base64}
+#/{payload_comprimido_con_lzstring}
 ```
 
+- El payload completo (layouts + todos los editores) se comprime como un solo blob con `lz-string` (`compressToEncodedURIComponent`) y se guarda en el hash fragment (`#/`)
+- El payload raw es: `{layouts}|{html}|{css}|{js}|{custom}`
 - `layouts`: IDs separados por coma (1=html, 2=css, 3=js, 4=preview, 5-14=custom editors, 15=console)
-- Cada valor de editor está codificado en Base64 (js-base64)
-- `/embed` prefix activa embed mode
-- Si todos los editores están vacíos, la URL contiene solo layouts
+- `/embed` en pathname activa embed mode, los datos siguen en el hash
+- **Compatibilidad hacia atrás:** URLs legacy con formato Base64 en pathname se siguen leyendo (fallback a `js-base64`)
+- Si todos los editores están vacíos, el payload contiene solo layouts
 
 ---
 
@@ -220,7 +223,6 @@ gcode/
 - Sin tests automatizados
 - Sin type checking (TypeScript)
 - `editor-hotkeys.js` está comentado y no se importa en `main.js`
-- Botón "Shortcuts" en footer es un placeholder deshabilitado
 - Sin soporte multi-tema (solo dark mode)
 - Sin soporte i18n
 - No hay manejo de errores para decodificación Base64 inválida en URL
