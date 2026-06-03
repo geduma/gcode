@@ -33,7 +33,8 @@ const CUSTOM_EDITORS = [
   { id: 11, name: 'sql', language: 'sql' },
   { id: 12, name: 'typescript', language: 'typescript' },
   { id: 13, name: 'xml', language: 'xml' },
-  { id: 14, name: 'markdown', language: 'markdown' }
+  { id: 14, name: 'markdown', language: 'markdown' },
+  { id: 16, name: 'plaintext', language: 'plaintext' }
 ]
 
 export {
