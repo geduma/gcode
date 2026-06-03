@@ -112,7 +112,7 @@ No Monaco imports, no URL encoding/decoding, no layout state logic — just orch
 - Layout dialog toggles `.off` class on layout elements and adjusts `gridTemplateColumns`/`gridTemplateRows`
 - When a single custom editor is active (id > 4), all other editors hidden, `--custom-editor` CSS custom property set for the language badge icon
 
-### 4.6 URL State
+### 4.5 URL State
 - Format: `/{layouts}|{html_b64}|{css_b64}|{js_b64}|{custom_b64}`
 - Encoded with `js-base64` (`encode`/`decode`)
 - `setHashUrl()`: reads editors, encodes, calls `window.history.replaceState`

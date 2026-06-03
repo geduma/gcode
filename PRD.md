@@ -38,7 +38,9 @@ gcode es un editor de código online (similar a CodePen/JSFiddle) que permite es
 
 ```
 index.html
-  └── src/main.js           (toda la lógica de la app, ~455 líneas)
+  └── src/config.js          (constantes puras, ~50 líneas)
+  └── src/editor.js          (motor: Monaco + URL + layout, ~235 líneas)
+  └── src/main.js            (shell: UI + init + eventos, ~232 líneas)
        ├── src/style.css     (todos los estilos, ~341 líneas)
        └── src/utils/
             ├── configurePrettier.js  (atajos de teclado Monaco)
@@ -47,12 +49,22 @@ public/                       (assets estáticos: SVGs, iconos)
 dist/                         (build output generado por Vite)
 ```
 
+**Dependencias (sin ciclos):**
+```
+config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
+```
+- `config.js` no importa nada del proyecto
+- `editor.js` solo importa de `config.js` + librerías externas
+- `main.js` importa de `config.js` y `editor.js` — nunca al revés
+
 **Flujo de datos:**
-1. `init()` → `createLoader()` (splash 500ms), `loadCustomList()`, `createCopyBtns()`, `createEditors()`, `update()`
-2. `getHashValue()` lee `window.location.pathname` y decodifica Base64 los valores de los editores
+1. `init()` en `main.js` → `createLoader()`, `loadCustomList()`, `createCopyBtns()`, `createEditors(update)`
+2. `createEditors()` en `editor.js` llama a `getHashValue()` que lee la URL y decodifica Base64 + restaura el layout
 3. Se crean 4 instancias de Monaco Editor (HTML, CSS, JS, CUSTOM)
-4. `onDidChangeModelContent` gatilla `update()` → renderiza el iframe + actualiza la URL
-5. El editor JS tiene debounce de 1s para evitar re-renders excesivos
+4. Cada editor registra `onDidChangeModelContent` → llama al callback `update()`
+5. `update()` en `main.js` renderiza el iframe via `createTemplate()` y guarda la URL via `setHashUrl()`
+6. El editor JS tiene debounce de 1s para evitar re-renders excesivos
+7. Las funciones que necesitan `EDITORS` lo reciben como parámetro (inyectado por `main.js`)
 
 ---
 
@@ -166,7 +178,9 @@ gcode/
 │   ├── gcode.png
 │   └── {language}.svg             # 16 SVGs de lenguajes
 ├── src/
-│   ├── main.js                    # Lógica principal (~455 líneas)
+│   ├── config.js                  # Constantes y configuración (~50 líneas)
+│   ├── editor.js                  # Motor: Monaco + URL + layout (~235 líneas)
+│   ├── main.js                    # Shell: UI + init + eventos (~232 líneas)
 │   ├── style.css                  # Todos los estilos (~341 líneas)
 │   └── utils/
 │       ├── configurePrettier.js   # Atajos Prettier/Command Palette
@@ -186,6 +200,9 @@ gcode/
 - **Sin TypeScript** — todo en JS plano
 - **Tema oscuro únicamente** — sin toggle de modo claro
 - **Nombres de funciones en camelCase** — `createEditor`, `setLayout`, `getHashValue`
+- **Arquitectura en 3 capas:** `config.js` (datos) ← `editor.js` (motor) ← `main.js` (shell) — dependencia unidireccional sin ciclos
+- **Inyección de dependencias simple:** las funciones del motor reciben `EDITORS` como parámetro en vez de acceder a un global
+- **Callback pattern:** `createEditors(onUpdate)` recibe un callback para evitar dependencia circular con `main.js`
 
 ---
 
