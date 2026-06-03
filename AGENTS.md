@@ -40,7 +40,9 @@ gcode/
 │   ├── gcode.png                 # README hero image
 │   └── {language}.svg            # 16 language icons (csharp, css, html, java, js, json, markdown, php, python, shell, sql, typescript, xml)
 ├── src/
-│   ├── main.js                   # Single entry point (~455 lines)
+│   ├── config.js                 # Constants and configuration (~50 lines)
+│   ├── editor.js                 # Monaco engine + URL state + layout management (~235 lines)
+│   ├── main.js                   # Orchestrator: UI, init, event wiring (~232 lines)
 │   ├── style.css                 # All styles (~341 lines)
 │   └── utils/
 │       ├── configurePrettier.js  # Re-layouts editors on resize + Ctrl/Cmd+P quick command
@@ -59,20 +61,48 @@ gcode/
 - **No TypeScript** — plain JavaScript
 - **camelCase** for function and variable names
 
-### 4.2 Main Module (`src/main.js`)
-- All app logic in a single file (~455 lines)
-- Named functions (not arrow functions for top-level definitions):
-  - `createEditor`, `createEditors`, `update`, `setLayout`, `setHashUrl`, `getHashValue`, `init`, etc.
-- DOM element references stored as constants at top of file (e.g., `const HTML_CONTAINER = el('#html')`)
-- Helper: `const el = selector => document.querySelector(selector)`
-- Template string for preview: `TEMPLATE` constant with `CSS_EDITOR`, `HTML_EDITOR`, `JS_EDITOR` placeholders
-- Editor change handler for JS has 1s debounce; others update immediately
-- `init()` called at end of file, after all event listeners are registered
+### 4.2 Module Architecture (3 files)
+
+The codebase is split into 3 files by responsibility, with a unidirectional dependency chain:
+
+```
+config.js (data)  ←  editor.js (engine)  ←  main.js (shell)
+```
+
+No circular dependencies: `config.js` imports nothing, `editor.js` imports only from `config.js`, `main.js` imports from both.
+
+#### `src/config.js` (~50 lines) — Constants & Configuration
+Pure data, no logic. Contains:
+- `el()` helper (`document.querySelector`)
+- `TEMPLATE` (preview iframe srcdoc)
+- DOM element references (`HTML_CONTAINER`, `CSS_CONTAINER`, etc.)
+- `INITIAL_LAYOUTS`, `ENUM_LAYOUTS`, `CUSTOM_EDITORS`
+
+#### `src/editor.js` (~235 lines) — Engine (Monaco + URL + Layout)
+All editor domain logic. Internal helpers are not exported:
+- **Internal:** `createTemplate()`, `getActiveLayouts()`, `updateLayouts()`, `toggleEditor()`
+- **Exported:** `createEditor()`, `createEditors(onUpdate)`, `loadCustomList()`, `createCustomEditor(EDITORS)`, `getHashValue()`, `setHashUrl(EDITORS)`, `notEmpty(EDITORS)`, `setLayout(EDITORS)`
+
+Functions that need `EDITORS` receive it as a parameter (injected by `main.js`). This avoids globals and keeps the module testable.
+
+Key patterns:
+- `createEditors(onUpdate)` accepts a callback instead of calling `update()` directly — avoids circular dependency with `main.js`
+- `getHashValue()` returns `{ html, css, js, custom, embedded }` instead of setting a global `EMBEDDED` flag — the caller decides what to do with the embed state
+
+#### `src/main.js` (~232 lines) — Orchestrator (UI + Init + Events)
+Thin shell that wires everything together:
+- `EDITORS` global (the only mutable global state)
+- `Split()` gutter initialization
+- `update()` — renders iframe via `createTemplate()` + saves URL via `setHashUrl()`
+- UI functions: `copyToClipBoard()`, `createLoader()`, `createCopyBtns()`, `openDialog()`, `closeDialog()`, `embedConfig()`
+- `init()` boot sequence and all event listeners
+
+No Monaco imports, no URL encoding/decoding, no layout state logic — just orchestration.
 
 ### 4.3 Editors Configuration
 - 4 Monaco editors: HTML, CSS, JS, CUSTOM
 - Same config for all editors (dark theme, word wrap, padding 16px top, no minimap, font ligatures on)
-- `CUSTOM_EDITORS` array defines 10 additional languages (id 5-14)
+- `CUSTOM_EDITORS` array in `config.js` defines 10 additional languages (id 5-14)
 - Dynamic language switching via `monaco.editor.setModelLanguage(model, language)`
 
 ### 4.4 Layout System
@@ -82,7 +112,7 @@ gcode/
 - Layout dialog toggles `.off` class on layout elements and adjusts `gridTemplateColumns`/`gridTemplateRows`
 - When a single custom editor is active (id > 4), all other editors hidden, `--custom-editor` CSS custom property set for the language badge icon
 
-### 4.5 URL State
+### 4.6 URL State
 - Format: `/{layouts}|{html_b64}|{css_b64}|{js_b64}|{custom_b64}`
 - Encoded with `js-base64` (`encode`/`decode`)
 - `setHashUrl()`: reads editors, encodes, calls `window.history.replaceState`
@@ -135,7 +165,7 @@ Registered at module level (after function definitions, before `init()`):
 ## 7. Adding a New Language to Custom Editor
 
 1. Add an SVG icon to `public/{name}.svg`
-2. Add entry to `CUSTOM_EDITORS` array in `src/main.js`:
+2. Add entry to `CUSTOM_EDITORS` array in `src/config.js`:
    ```js
    { id: <next_id>, name: '<name>', language: '<monaco-language-id>' }
    ```
@@ -161,7 +191,7 @@ Registered at module level (after function definitions, before `init()`):
 
 ---
 
-## 10. Key Constants (from `src/main.js`)
+## 10. Key Constants (from `src/config.js`)
 
 | Constant           | Value                     | Purpose                     |
 | ------------------ | ------------------------- | --------------------------- |
