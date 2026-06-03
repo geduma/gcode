@@ -136,17 +136,6 @@ section {
   min-height: 0;
 }
 
-.gutter-console {
-  height: 6px;
-  cursor: row-resize;
-  background-color: #1E1E1E;
-  display: none;
-  flex-shrink: 0;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
-}
-
 .console-panel {
   display: none;
   overflow-y: auto;

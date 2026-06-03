@@ -8,7 +8,6 @@ import {
   JS_CONTAINER,
   CUSTOM_CONTAINER,
   CONSOLE_PANEL,
-  GUTTER_CONSOLE,
   DIALOG,
   OVERLAY,
   LAYOUTS_ELEMENTS
@@ -36,28 +35,6 @@ Split({
     track: 3,
     element: document.querySelector('.gutter-row-2')
   }]
-})
-
-let CONSOLE_HEIGHT = 150
-
-GUTTER_CONSOLE.addEventListener('mousedown', (e) => {
-  e.preventDefault()
-  const startY = e.clientY
-  const startHeight = CONSOLE_HEIGHT
-
-  const onMove = (e) => {
-    e.preventDefault()
-    CONSOLE_HEIGHT = Math.max(60, startHeight + startY - e.clientY)
-    CONSOLE_PANEL.style.height = CONSOLE_HEIGHT + 'px'
-  }
-
-  const onUp = () => {
-    window.removeEventListener('mousemove', onMove)
-    window.removeEventListener('mouseup', onUp)
-  }
-
-  window.addEventListener('mousemove', onMove)
-  window.addEventListener('mouseup', onUp)
 })
 
 const update = () => {

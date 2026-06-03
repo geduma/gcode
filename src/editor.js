@@ -19,7 +19,6 @@ import {
   CUSTOM_CONTAINER,
   PREVIEW_CONTAINER,
   CONSOLE_PANEL,
-  GUTTER_CONSOLE,
   INITIAL_LAYOUTS,
   ENUM_LAYOUTS
 } from './config'
@@ -213,8 +212,6 @@ const setLayout = (EDITORS) => {
   toggleEditor([HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER, PREVIEW_CONTAINER, CONSOLE_PANEL], EDITORS)
 
   const actives = getActiveLayouts().split(',')
-  const consoleActive = actives.includes(ENUM_LAYOUTS.console.toString())
-  GUTTER_CONSOLE.style.display = consoleActive ? 'block' : 'none'
 
   const grid = el('.grid')
   const gridRows = el('.grid-rows')

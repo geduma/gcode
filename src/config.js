@@ -9,7 +9,6 @@ const CUSTOM_CONTAINER = el('#custom')
 const PREVIEW_CONTAINER = el('#preview')
 const PREVIEW_COLUMN = el('.preview-column')
 const CONSOLE_PANEL = el('#console')
-const GUTTER_CONSOLE = el('.gutter-console')
 const DIALOG = document.querySelector('dialog')
 const OVERLAY = document.querySelector('.overlay')
 const LAYOUTS_ELEMENTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js,.layout-console')
@@ -47,7 +46,6 @@ export {
   PREVIEW_CONTAINER,
   PREVIEW_COLUMN,
   CONSOLE_PANEL,
-  GUTTER_CONSOLE,
   DIALOG,
   OVERLAY,
   LAYOUTS_ELEMENTS,
