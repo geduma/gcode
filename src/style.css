@@ -140,12 +140,12 @@ section {
   display: none;
   overflow-y: auto;
   flex-shrink: 0;
-  background-color: #1E1E1E;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  background-color: #0c0c0c;
+  font-family: 'Cascadia Code PL', 'Consolas', 'Courier New', monospace;
   font-size: 12px;
   padding: 8px 12px;
   height: 150px;
-  border-top: 1px solid #333;
+  border-top: 1px solid #1a1a1a;
 }
 
 .console-output {
@@ -168,15 +168,15 @@ section {
 }
 
 .console-warn {
-  color: #cca700;
+  color: #dcdcaa;
 }
 
 .console-error {
-  color: #f48771;
+  color: #f44747;
 }
 
 .console-debug {
-  color: #8a8a8a;
+  color: #6a6a6a;
 }
 
 .editor {

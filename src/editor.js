@@ -50,7 +50,8 @@ const createTemplate = ({ html, css, js }) => {
   return TEMPLATE
     .replace('HTML_EDITOR', html)
     .replace('CSS_EDITOR', css)
-    .replace('JS_EDITOR', CONSOLE_CAPTURE + js)
+    .replace('CONSOLE_CAPTURE', CONSOLE_CAPTURE)
+    .replace('JS_EDITOR', js)
 }
 
 const getActiveLayouts = () => {

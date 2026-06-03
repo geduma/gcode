@@ -1,6 +1,6 @@
 const el = selector => document.querySelector(selector)
 
-const TEMPLATE = '<!DOCTYPE html><html lang="en"><head> <style>CSS_EDITOR</style></head><body style="background-color: #333333;">HTML_EDITOR<script>JS_EDITOR</script></body></html>'
+const TEMPLATE = '<!DOCTYPE html><html lang="en"><head> <style>CSS_EDITOR</style></head><body style="background-color: #333333;">HTML_EDITOR<script>CONSOLE_CAPTURE</script><script>JS_EDITOR</script></body></html>'
 
 const HTML_CONTAINER = el('#html')
 const CSS_CONTAINER = el('#css')
