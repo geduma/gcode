@@ -170,8 +170,10 @@ const init = () => {
 }
 
 // events
-el('.close-dialog-btn').addEventListener('click', () => {
-  closeDialog()
+document.querySelectorAll('.close-dialog-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    closeDialog()
+  })
 })
 
 el('.copy').addEventListener('click', (e) => {
