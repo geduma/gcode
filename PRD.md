@@ -79,8 +79,9 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 
 ### 5.2 Layout
 - **Paneles redimensionables:** 3 filas (HTML, CSS, JS) + columna para preview, usando split-grid
-- **Diálogo de Layout:** Permite ocultar/mostrar paneles (HTML, CSS, JS, preview)
+- **Diálogo de Layout:** Permite ocultar/mostrar paneles (HTML, CSS, JS, preview, console)
 - **Editor personalizado:** Selector de lenguaje (C#, PHP, Python, Java, JSON, Shell, SQL, TypeScript, XML, Markdown) que reemplaza los otros paneles
+- **Consola de salida:** Panel en la columna de preview que muestra la salida de `console.log/warn/error/info/debug` del JS ejecutado en el iframe
 
 ### 5.3 UI/UX
 - **Tema oscuro:** Único tema (vs-dark de Monaco)
@@ -102,6 +103,14 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 | Open Editor    | Abre la URL en una nueva pestaña        |
 | Embed Editor   | Copia snippet `<iframe>` al portapapeles |
 
+### 5.6 Consola de Salida JS
+- **Panel de salida:** Muestra en vivo la salida de consola del código JavaScript ejecutado en el iframe
+- **Captura automática:** Script inyectado wrappea `console.log/warn/error/info/debug` + `window.onerror` + `unhandledrejection`
+- **Código por colores:** gray=log, blue=info, yellow=warn, red=error, dim=debug
+- **Redimensionable:** Drag handler entre preview y consola (altura mínima 60px)
+- **Se limpia sola:** En cada refresco del iframe se borra la salida anterior
+- **Toggle en diálogo:** Se prende/apaga como cualquier otro panel del layout (ID 15)
+
 ---
 
 ## 6. Lenguajes Soportados (Custom Editor)
@@ -122,7 +131,7 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 /{layouts}|{html_base64}|{css_base64}|{js_base64}|{custom_base64}
 ```
 
-- `layouts`: IDs separados por coma (1=html, 2=css, 3=js, 4=preview, 5-14=custom editors)
+- `layouts`: IDs separados por coma (1=html, 2=css, 3=js, 4=preview, 5-14=custom editors, 15=console)
 - Cada valor de editor está codificado en Base64 (js-base64)
 - `/embed` prefix activa embed mode
 - Si todos los editores están vacíos, la URL contiene solo layouts

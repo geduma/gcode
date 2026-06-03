@@ -7,6 +7,8 @@ import {
   CSS_CONTAINER,
   JS_CONTAINER,
   CUSTOM_CONTAINER,
+  CONSOLE_PANEL,
+  GUTTER_CONSOLE,
   DIALOG,
   OVERLAY,
   LAYOUTS_ELEMENTS
@@ -36,6 +38,28 @@ Split({
   }]
 })
 
+let CONSOLE_HEIGHT = 150
+
+GUTTER_CONSOLE.addEventListener('mousedown', (e) => {
+  e.preventDefault()
+  const startY = e.clientY
+  const startHeight = CONSOLE_HEIGHT
+
+  const onMove = (e) => {
+    e.preventDefault()
+    CONSOLE_HEIGHT = Math.max(60, startHeight + startY - e.clientY)
+    CONSOLE_PANEL.style.height = CONSOLE_HEIGHT + 'px'
+  }
+
+  const onUp = () => {
+    window.removeEventListener('mousemove', onMove)
+    window.removeEventListener('mouseup', onUp)
+  }
+
+  window.addEventListener('mousemove', onMove)
+  window.addEventListener('mouseup', onUp)
+})
+
 const update = () => {
   el('iframe').setAttribute('srcdoc', createTemplate({
     html: EDITORS.HTML.getValue(),
@@ -43,6 +67,7 @@ const update = () => {
     js: EDITORS.JS.getValue()
   }))
 
+  CONSOLE_PANEL.querySelector('.console-output').innerHTML = ''
   setHashUrl(EDITORS)
 }
 
@@ -226,6 +251,17 @@ document.addEventListener('keydown', (event) => {
 
   if (event.ctrlKey && event.key === 'Enter') {
     openDialog()
+  }
+})
+
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'console') {
+    const { method, args } = event.data
+    const entry = document.createElement('div')
+    entry.className = 'console-entry console-' + method
+    entry.textContent = args.join(' ')
+    CONSOLE_PANEL.querySelector('.console-output').appendChild(entry)
+    CONSOLE_PANEL.scrollTop = CONSOLE_PANEL.scrollHeight
   }
 })
 

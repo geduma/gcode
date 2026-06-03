@@ -7,17 +7,21 @@ const CSS_CONTAINER = el('#css')
 const JS_CONTAINER = el('#js')
 const CUSTOM_CONTAINER = el('#custom')
 const PREVIEW_CONTAINER = el('#preview')
+const PREVIEW_COLUMN = el('.preview-column')
+const CONSOLE_PANEL = el('#console')
+const GUTTER_CONSOLE = el('.gutter-console')
 const DIALOG = document.querySelector('dialog')
 const OVERLAY = document.querySelector('.overlay')
-const LAYOUTS_ELEMENTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js')
+const LAYOUTS_ELEMENTS = document.querySelectorAll('.layout-preview,.layout-html,.layout-css,.layout-js,.layout-console')
 
-const INITIAL_LAYOUTS = '1,2,3,4'
+const INITIAL_LAYOUTS = '1,2,3,4,15'
 
 const ENUM_LAYOUTS = {
   html: 1,
   css: 2,
   js: 3,
-  preview: 4
+  preview: 4,
+  console: 15
 }
 
 const CUSTOM_EDITORS = [
@@ -41,6 +45,9 @@ export {
   JS_CONTAINER,
   CUSTOM_CONTAINER,
   PREVIEW_CONTAINER,
+  PREVIEW_COLUMN,
+  CONSOLE_PANEL,
+  GUTTER_CONSOLE,
   DIALOG,
   OVERLAY,
   LAYOUTS_ELEMENTS,

@@ -18,6 +18,8 @@ import {
   JS_CONTAINER,
   CUSTOM_CONTAINER,
   PREVIEW_CONTAINER,
+  CONSOLE_PANEL,
+  GUTTER_CONSOLE,
   INITIAL_LAYOUTS,
   ENUM_LAYOUTS
 } from './config'
@@ -37,11 +39,19 @@ window.MonacoEnvironment = {
 
 // --- Internal helpers ---
 
+const CONSOLE_CAPTURE = ';(function(){var c={};' +
+  "['log','warn','error','info','debug'].forEach(function(m){" +
+  'c[m]=console[m];console[m]=function(){var a=Array.prototype.slice.call(arguments).map(function(a){try{return typeof a==="object"?JSON.stringify(a,null,2):String(a)}catch(e){return String(a)}});c[m].apply(console,arguments);window.parent.postMessage({type:"console",method:m,args:a},"*")};' +
+  '});' +
+  "window.onerror=function(m,u,l){window.parent.postMessage({type:'console',method:'error',args:[m+' ('+u+':'+l+')']},'*')};" +
+  "window.addEventListener('unhandledrejection',function(e){window.parent.postMessage({type:'console',method:'error',args:['Unhandled Promise: '+e.reason]},'*')})" +
+  '})();'
+
 const createTemplate = ({ html, css, js }) => {
   return TEMPLATE
     .replace('HTML_EDITOR', html)
     .replace('CSS_EDITOR', css)
-    .replace('JS_EDITOR', js)
+    .replace('JS_EDITOR', CONSOLE_CAPTURE + js)
 }
 
 const getActiveLayouts = () => {
@@ -76,6 +86,8 @@ const updateLayouts = (layouts) => {
   setLayout(null)
 }
 
+const isCustomEditor = (id) => CUSTOM_EDITORS.some(x => x.id === Number(id))
+
 const toggleEditor = (elements, EDITORS) => {
   const actives = getActiveLayouts().split(',')
 
@@ -84,7 +96,7 @@ const toggleEditor = (elements, EDITORS) => {
     else el.style.display = 'block'
   })
 
-  if (actives.length === 1 && actives[0] > 4) {
+  if (actives.length === 1 && isCustomEditor(actives[0])) {
     CUSTOM_CONTAINER.style.display = 'block'
     document.documentElement.style.setProperty('--custom-editor', `url('/${CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language}.svg')`)
     if (EDITORS) createCustomEditor(EDITORS)
@@ -126,7 +138,7 @@ const createEditors = (onUpdate) => {
     HTML: createEditor({ el: HTML_CONTAINER, value: values.html, language: 'html' }),
     CSS: createEditor({ el: CSS_CONTAINER, value: values.css, language: 'css' }),
     JS: createEditor({ el: JS_CONTAINER, value: values.js, language: 'javascript' }),
-    CUSTOM: createEditor({ el: CUSTOM_CONTAINER, value: values.custom, language: (actives.length === 1 && Number(actives[0]) > 4) ? CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language : 'plaintext' })
+    CUSTOM: createEditor({ el: CUSTOM_CONTAINER, value: values.custom, language: (actives.length === 1 && isCustomEditor(actives[0])) ? CUSTOM_EDITORS.find(x => x.id === Number(actives[0])).language : 'plaintext' })
   }
 
   editors.HTML.onDidChangeModelContent(onUpdate)
@@ -198,9 +210,12 @@ const notEmpty = (EDITORS) => {
 }
 
 const setLayout = (EDITORS) => {
-  toggleEditor([HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER, PREVIEW_CONTAINER], EDITORS)
+  toggleEditor([HTML_CONTAINER, CSS_CONTAINER, JS_CONTAINER, PREVIEW_CONTAINER, CONSOLE_PANEL], EDITORS)
 
   const actives = getActiveLayouts().split(',')
+  const consoleActive = actives.includes(ENUM_LAYOUTS.console.toString())
+  GUTTER_CONSOLE.style.display = consoleActive ? 'block' : 'none'
+
   const grid = el('.grid')
   const gridRows = el('.grid-rows')
 

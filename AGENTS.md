@@ -104,13 +104,15 @@ No Monaco imports, no URL encoding/decoding, no layout state logic — just orch
 - Same config for all editors (dark theme, word wrap, padding 16px top, no minimap, font ligatures on)
 - `CUSTOM_EDITORS` array in `config.js` defines 10 additional languages (id 5-14)
 - Dynamic language switching via `monaco.editor.setModelLanguage(model, language)`
+- Console panel (id 15) is NOT a Monaco editor — it's a read-only `<div>` for JS console output, placed in the preview column`
 
 ### 4.4 Layout System
 - CSS Grid-based layout managed by `split-grid` library
 - Grid has 2 columns (editors | preview) with `.gutter-col-1`
 - Editor rows are in `.grid-rows` with `.gutter-row-1` (after HTML) and `.gutter-row-2` (after CSS)
+- Preview column is a flex column: iframe (flex:1) + console gutter + console panel (fixed height)
 - Layout dialog toggles `.off` class on layout elements and adjusts `gridTemplateColumns`/`gridTemplateRows`
-- When a single custom editor is active (id > 4), all other editors hidden, `--custom-editor` CSS custom property set for the language badge icon
+- When a single custom editor is active (id 5-14), all other editors hidden, `--custom-editor` CSS custom property set for the language badge icon
 
 ### 4.5 URL State
 - Format: `/{layouts}|{html_b64}|{css_b64}|{js_b64}|{custom_b64}`
@@ -134,6 +136,15 @@ Registered at module level (after function definitions, before `init()`):
 - `copyToClipBoard({ pattern, text, position })` creates a "copied!" tooltip span
 - Falls back to `document.execCommand('copy')` if `navigator.clipboard` unavailable
 - Tooltip auto-removes after 1s
+
+### 4.8 Console Panel
+- Toggleable section (id 15) that shares space with the preview iframe in the right column
+- Not a Monaco editor — a read-only scrolling `<div>` with monospace font
+- **Capture mechanism:** `CONSOLE_CAPTURE` script injected at the top of user JS in `preview.js` → wrapps `console.log/warn/error/info/debug` via `postMessage` to parent
+- Also captures `window.onerror` and `unhandledrejection` events
+- **UI:** Color-coded entries (gray=log, blue=info, yellow=warn, red=error, dim=debug)
+- Console **clears** automatically on each iframe refresh (`update()`)
+- Resizable via drag handler on `.gutter-console` (stores height in `CONSOLE_HEIGHT` variable, min 60px)
 
 ---
 
