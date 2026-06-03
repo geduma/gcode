@@ -179,7 +179,7 @@ el('.copy').addEventListener('click', (e) => {
 })
 
 el('.embed').addEventListener('click', (e) => {
-  const url = `${window.location.origin}/embed${window.location.pathname}`
+  const url = `${window.location.origin}/embed${window.location.pathname}${window.location.hash}`
   const iframe = `<iframe src="${url}" style="width: 100%; min-width: 500px; min-height: 500px;" frameborder="0" allow="clipboard-write;" loading="lazy"></iframe>`
   copyToClipBoard({ pattern: e.target, text: iframe, position: 'top' })
 })
