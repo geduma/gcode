@@ -186,6 +186,9 @@ const getHashValue = () => {
     embedded = true
   }
 
+  // #/Q es compressToEncodedURIComponent('') — hash sin contenido
+  if (raw === 'Q') raw = ''
+
   if (!raw) {
     let path = window.location.pathname
     if (path.indexOf('/embed') === 0) {
@@ -207,13 +210,20 @@ const getHashValue = () => {
     }
   }
 
-  const [layouts, html, css, js, custom] = raw.split('|')
-  updateLayouts(layouts?.length > 0 ? layouts : INITIAL_LAYOUTS)
+  const [layouts, html, css, js, custom] = raw.replace(/%7C/g, '|').split('|')
+
+  const decodeLegacyLayouts = (v) => {
+    if (!v) return v
+    const b64 = decode(v)
+    if (/^[\d,]+$/.test(b64)) return b64
+    return v
+  }
+  updateLayouts(decodeLegacyLayouts(layouts) || INITIAL_LAYOUTS)
 
   const decompress = (v) => {
     if (!v) return ''
     const d = decompressFromEncodedURIComponent(v)
-    return d ?? decode(v)
+    return d || decode(v)
   }
 
   return {
