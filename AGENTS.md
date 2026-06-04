@@ -41,7 +41,7 @@ gcode/
 │   └── {language}.svg            # 16 language icons (csharp, css, html, java, js, json, markdown, php, python, shell, sql, typescript, xml)
 ├── src/
 │   ├── config.js                 # Constants and configuration (~50 lines)
-│   ├── editor.js                 # Monaco engine + URL state + layout management (~290 lines)
+│   ├── editor.js                 # Monaco engine + URL state + layout management (~300 lines)
 │   ├── main.js                   # Orchestrator: UI, init, event wiring (~260 lines)
 │   ├── style.css                 # All styles (~341 lines)
 │   └── utils/
@@ -78,7 +78,7 @@ Pure data, no logic. Contains:
 - DOM element references (`HTML_CONTAINER`, `CSS_CONTAINER`, etc.)
 - `INITIAL_LAYOUTS`, `ENUM_LAYOUTS`, `CUSTOM_EDITORS`
 
-#### `src/editor.js` (~235 lines) — Engine (Monaco + URL + Layout)
+#### `src/editor.js` (~300 lines) — Engine (Monaco + URL + Layout)
 All editor domain logic. Internal helpers are not exported:
 - **Internal:** `createTemplate()`, `getActiveLayouts()`, `updateLayouts()`, `toggleEditor()`
 - **Exported:** `createEditor()`, `createEditors(onUpdate)`, `loadCustomList()`, `createCustomEditor(EDITORS)`, `getHashValue()`, `setHashUrl(EDITORS)`, `notEmpty(EDITORS)`, `setLayout(EDITORS)`
@@ -115,11 +115,18 @@ No Monaco imports, no URL encoding/decoding, no layout state logic — just orch
 - When a single custom editor is active (id 5-14), all other editors hidden, `--custom-editor` CSS custom property set for the language badge icon
 
 ### 4.5 URL State
-- Format (hash fragment): `#/{layouts}|{html}|{css}|{js}|{custom}` compressed with lz-string `compressToEncodedURIComponent`
-- `setHashUrl()`: reads editors, combines into one payload string, compresses with lz-string, writes to `window.history.replaceState` with `#/` prefix
-- `getHashValue()`: reads from `window.location.hash`, decompresses with lz-string. Falls back to pathname + `js-base64` `decode()` for legacy URLs
-- If editors are empty, payload contains only layouts (no `|` delimiters after)
-- `/embed` prefix in pathname activates embed mode (data still in hash)
+- **Current format (hash lz-string):** `#/{payload}` where payload = `compressToEncodedURIComponent("{layouts}|{html}|{css}|{js}|{custom}")`
+- **Empty hash:** `#/Q` = `compressToEncodedURIComponent('')` — signals legacy content may be in pathname
+- **`setHashUrl()`:** reads editors, builds pipe-separated string, compresses with lz-string, writes to `window.history.replaceState` with `#/` prefix
+- **`getHashValue()` pipeline (3-tier fallback):**
+  1. Decompress hash with lz-string → if non-empty result, use it
+  2. If hash is `#/Q`, treat as empty and fall through to pathname
+  3. No hash → read `pathname`, attempt lz-string decompress
+  4. Legacy pipe-separated: replace `%7C` → `|` (pathname may return percent-encoded chars), split by `|`:
+     - Layouts: `decode(b64)` → if matches `/^[\d,]+$/` use decoded, else use original; empty → `INITIAL_LAYOUTS`
+     - Content: `decompressFromEncodedURIComponent(v) || decode(v)` — lz-string with base64 fallback
+- If editors empty, payload contains only layouts (no `|` after)
+- `/embed` in pathname activates embed mode (data stays in hash)
 
 ### 4.6 Event Listeners
 Registered at module level (after function definitions, before `init()`):

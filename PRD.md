@@ -40,7 +40,7 @@ gcode es un editor de código online (similar a CodePen/JSFiddle) que permite es
 ```
 index.html
   └── src/config.js          (constantes puras, ~50 líneas)
-  └── src/editor.js          (motor: Monaco + URL + layout, ~235 líneas)
+  └── src/editor.js          (motor: Monaco + URL + layout, ~300 líneas)
   └── src/main.js            (shell: UI + init + eventos, ~232 líneas)
        ├── src/style.css     (todos los estilos, ~341 líneas)
        └── src/utils/
@@ -128,16 +128,32 @@ config.js (datos)  ←  editor.js (motor)  ←  main.js (shell)
 
 ## 7. Formato de URL
 
+### 7.1 Formato actual (hash lz-string)
 ```
 #/{payload_comprimido_con_lzstring}
 ```
-
-- El payload completo (layouts + todos los editores) se comprime como un solo blob con `lz-string` (`compressToEncodedURIComponent`) y se guarda en el hash fragment (`#/`)
-- El payload raw es: `{layouts}|{html}|{css}|{js}|{custom}`
+- El payload completo se comprime con `lz-string.compressToEncodedURIComponent()` y se guarda en el hash con prefijo `#/`
+- Payload raw: `{layouts}|{html}|{css}|{js}|{custom}`
 - `layouts`: IDs separados por coma (1=html, 2=css, 3=js, 4=preview, 5-14=custom editors, 15=console)
-- `/embed` en pathname activa embed mode, los datos siguen en el hash
-- **Compatibilidad hacia atrás:** URLs legacy con formato Base64 en pathname se siguen leyendo (fallback a `js-base64`)
-- Si todos los editores están vacíos, el payload contiene solo layouts
+- Si editores vacíos, payload contiene solo layouts
+- `compressToEncodedURIComponent('')` produce `'Q'` — el hash `#/Q` significa "sin contenido, ver pathname"
+
+### 7.2 Pipeline de parseo (`getHashValue`)
+1. **Hash lz-string:** Lee `location.hash`, quita `#/`, descomprime con lz-string
+2. **Hash vacío (`#/Q`):** Si es exactamente `Q`, lo limpia y cae al pathname
+3. **Pathname lz-string:** Lee `location.pathname`, intenta descomprimir con lz-string
+4. **Legacy pipe-separated:** Reemplaza `%7C` → `|` (pathname puede retornar percent-encoded), divide por `|`:
+   - **layouts:** `decode(b64)` → si matchea `/^[\d,]+$/` usa decoded, si no usa original; vacío → `INITIAL_LAYOUTS`
+   - **Contenido:** `decompressFromEncodedURIComponent(v) || decode(v)` — lz-string con fallback a base64
+
+### 7.3 URLs legacy (pathname con Base64, anterior a lz-string)
+- Formato: `/{layouts_b64}%7C{html_b64}%7C{css_b64}%7C{js_b64}%7C{custom_b64}`
+- `%7C` es URL-encoding del pipe (`|`) — `pathname` puede devolverlo codificado o decodificado
+- Cada parte codificada individualmente con `js-base64.encode()`
+- Soportado mediante paso 4 del pipeline
+
+### 7.4 Embed mode
+- `/embed` en pathname activa embed mode; los datos siguen en el hash
 
 ---
 
@@ -191,7 +207,7 @@ gcode/
 │   └── {language}.svg             # 16 SVGs de lenguajes
 ├── src/
 │   ├── config.js                  # Constantes y configuración (~50 líneas)
-│   ├── editor.js                  # Motor: Monaco + URL + layout (~235 líneas)
+│   ├── editor.js                  # Motor: Monaco + URL + layout (~300 líneas)
 │   ├── main.js                    # Shell: UI + init + eventos (~232 líneas)
 │   ├── style.css                  # Todos los estilos (~341 líneas)
 │   └── utils/
